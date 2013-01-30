@@ -13,6 +13,7 @@ setup: scrooge-3.0.1
 scrooge-3.0.1:
 	wget http://maven.twttr.com/com/twitter/scrooge/3.0.1/scrooge-3.0.1.zip
 	unzip ./scrooge-3.0.1.zip
+	rm ./scrooge-3.0.1.zip
 
 clean:
 	rm -rf ./gen-rb ./gen-scala
