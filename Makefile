@@ -1,4 +1,4 @@
-all: gen-scala gen-rb
+all: scrooge-3.0.1 gen-scala gen-rb
 	@echo 'Success!'
 
 gen-scala: october.thrift
