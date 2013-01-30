@@ -3,9 +3,6 @@
 #
 # !!! ENSURE YOU UPDATE THE VERSION NUMBER WHEN UPDATING !!!
 
-namespace rb Recommender
-namespace scala Display
-
 # See the Semantic Versioning Specification (SemVer) http://semver.org.
 const string VERSION = "0.0.1"
 
@@ -53,6 +50,6 @@ exception TimeoutException {
 #
 
 service Recommender {
-    string ping() throws (TimeoutException te),
-    PostList recPosts(1: required i64 user_id) throws (NotFoundException nfe, EngineException ee, TimeoutException te),
+    string ping() throws (1: TimeoutException te),
+    PostList recPosts(1: required i64 user_id) throws (1: NotFoundException nfe, 2: EngineException ee, 3: TimeoutException te),
 }
