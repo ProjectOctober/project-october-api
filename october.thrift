@@ -2,6 +2,7 @@
 # Interface definition for October recommendation service
 #
 # !!! ENSURE YOU UPDATE THE VERSION NUMBER WHEN UPDATING !!!
+namespace java october
 
 # See the Semantic Versioning Specification (SemVer) http://semver.org.
 const string VERSION = "0.0.1"
