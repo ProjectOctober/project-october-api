@@ -1,8 +1,8 @@
-all: scrooge-3.0.1 scala gen-rb
+all: scrooge-3.0.1 gen_scala gen-rb
 	@echo 'Success!'
 
-scala: october.thrift
-	java -jar ./scrooge-3.0.1/scrooge-3.0.1.jar -d scala ./october.thrift
+gen_scala: october.thrift
+	java -jar ./scrooge-3.0.1/scrooge-3.0.1.jar -d gen_scala ./october.thrift
 
 gen-rb: october.thrift
 	thrift --gen rb ./october.thrift 
