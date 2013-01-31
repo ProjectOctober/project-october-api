@@ -6,6 +6,7 @@ package october
 import com.twitter.scrooge.{ThriftException, ThriftStruct, ThriftStructCodec}
 import org.apache.thrift.protocol._
 import java.nio.ByteBuffer
+import com.twitter.finagle.SourcedException
 import scala.collection.mutable
 import scala.collection.{Map, Set}
 

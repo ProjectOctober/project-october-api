@@ -10,6 +10,15 @@ import org.apache.thrift.protocol._
 import org.apache.thrift.TApplicationException
 import scala.collection.mutable
 import scala.collection.{Map, Set}
+import com.twitter.util.Future
+import com.twitter.conversions.time._
+import com.twitter.finagle.{Service => FinagleService}
+import com.twitter.finagle.stats.{NullStatsReceiver, StatsReceiver}
+import com.twitter.finagle.thrift.ThriftClientRequest
+import com.twitter.finagle.SourcedException
+import com.twitter.finagle.{Service => FinagleService}
+import java.util.Arrays
+import org.apache.thrift.transport.{TMemoryBuffer, TMemoryInputTransport, TTransport}
 
 
 object Recommender {
@@ -24,6 +33,12 @@ object Recommender {
     def recPosts(userId: Long): PostList
   }
 
+  trait FutureIface {
+    
+    def ping(): Future[String]
+    
+    def recPosts(userId: Long): Future[PostList]
+  }
 
   
   object PingArgs extends ThriftStructCodec[PingArgs] {
@@ -584,5 +599,228 @@ object Recommender {
     }
   
     override def productPrefix: String = "RecPostsResult"
+  }
+  
+  class FinagledClient(
+    val service: FinagleService[ThriftClientRequest, Array[Byte]],
+    val protocolFactory: TProtocolFactory = new TBinaryProtocol.Factory,
+    val serviceName: String = "",
+    stats: StatsReceiver = NullStatsReceiver
+  ) extends FutureIface {
+    // ----- boilerplate that should eventually be moved into finagle:
+  
+    protected def encodeRequest(name: String, args: ThriftStruct) = {
+      val buf = new TMemoryBuffer(512)
+      val oprot = protocolFactory.getProtocol(buf)
+  
+      oprot.writeMessageBegin(new TMessage(name, TMessageType.CALL, 0))
+      args.write(oprot)
+      oprot.writeMessageEnd()
+  
+      val bytes = Arrays.copyOfRange(buf.getArray, 0, buf.length)
+      new ThriftClientRequest(bytes, false)
+    }
+  
+    protected def decodeResponse[T <: ThriftStruct](resBytes: Array[Byte], codec: ThriftStructCodec[T]) = {
+      val iprot = protocolFactory.getProtocol(new TMemoryInputTransport(resBytes))
+      val msg = iprot.readMessageBegin()
+      try {
+        if (msg.`type` == TMessageType.EXCEPTION) {
+          val exception = TApplicationException.read(iprot) match {
+            case sourced: SourcedException =>
+              if (serviceName != "") sourced.serviceName = serviceName
+              sourced
+            case e => e
+          }
+          throw exception
+        } else {
+          codec.decode(iprot)
+        }
+      } finally {
+        iprot.readMessageEnd()
+      }
+    }
+  
+    protected def missingResult(name: String) = {
+      new TApplicationException(
+        TApplicationException.MISSING_RESULT,
+        name + " failed: unknown result"
+      )
+    }
+  
+    // ----- end boilerplate.
+  
+    private[this] val scopedStats = if (serviceName != "") stats.scope(serviceName) else stats
+    private[this] object __stats_ping {
+      val RequestsCounter = scopedStats.scope("ping").counter("requests")
+      val SuccessCounter = scopedStats.scope("ping").counter("success")
+      val FailuresCounter = scopedStats.scope("ping").counter("failures")
+      val FailuresScope = scopedStats.scope("ping").scope("failures")
+    }
+  
+  
+    def ping(): Future[String] = {
+      __stats_ping.RequestsCounter.incr()
+      this.service(encodeRequest("ping", PingArgs())) flatMap { response =>
+        val result = decodeResponse(response, PingResult)
+        val exception =
+          (result.te).map(Future.exception)
+        exception.orElse(result.success.map(Future.value)).getOrElse(Future.exception(missingResult("ping")))
+      } rescue {
+        case ex: SourcedException => {
+          if (this.serviceName != "") { ex.serviceName = this.serviceName }
+          Future.exception(ex)
+        }
+      } onSuccess { _ =>
+        __stats_ping.SuccessCounter.incr()
+      } onFailure { ex =>
+        __stats_ping.FailuresCounter.incr()
+        __stats_ping.FailuresScope.counter(ex.getClass.getName).incr()
+      }
+    }
+    private[this] object __stats_recPosts {
+      val RequestsCounter = scopedStats.scope("recPosts").counter("requests")
+      val SuccessCounter = scopedStats.scope("recPosts").counter("success")
+      val FailuresCounter = scopedStats.scope("recPosts").counter("failures")
+      val FailuresScope = scopedStats.scope("recPosts").scope("failures")
+    }
+  
+  
+    def recPosts(userId: Long): Future[PostList] = {
+      __stats_recPosts.RequestsCounter.incr()
+      this.service(encodeRequest("recPosts", RecPostsArgs(userId))) flatMap { response =>
+        val result = decodeResponse(response, RecPostsResult)
+        val exception =
+          (result.nfe orElse result.ee orElse result.te).map(Future.exception)
+        exception.orElse(result.success.map(Future.value)).getOrElse(Future.exception(missingResult("recPosts")))
+      } rescue {
+        case ex: SourcedException => {
+          if (this.serviceName != "") { ex.serviceName = this.serviceName }
+          Future.exception(ex)
+        }
+      } onSuccess { _ =>
+        __stats_recPosts.SuccessCounter.incr()
+      } onFailure { ex =>
+        __stats_recPosts.FailuresCounter.incr()
+        __stats_recPosts.FailuresScope.counter(ex.getClass.getName).incr()
+      }
+    }
+  }
+  
+  class FinagledService(
+    iface: FutureIface,
+    protocolFactory: TProtocolFactory
+  ) extends FinagleService[Array[Byte], Array[Byte]] {
+    // ----- boilerplate that should eventually be moved into finagle:
+  
+    protected val functionMap = new mutable.HashMap[String, (TProtocol, Int) => Future[Array[Byte]]]()
+  
+    protected def addFunction(name: String, f: (TProtocol, Int) => Future[Array[Byte]]) {
+      functionMap(name) = f
+    }
+  
+    protected def exception(name: String, seqid: Int, code: Int, message: String): Future[Array[Byte]] = {
+      try {
+        val x = new TApplicationException(code, message)
+        val memoryBuffer = new TMemoryBuffer(512)
+        val oprot = protocolFactory.getProtocol(memoryBuffer)
+  
+        oprot.writeMessageBegin(new TMessage(name, TMessageType.EXCEPTION, seqid))
+        x.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.getTransport().flush()
+        Future.value(Arrays.copyOfRange(memoryBuffer.getArray(), 0, memoryBuffer.length()))
+      } catch {
+        case e: Exception => Future.exception(e)
+      }
+    }
+  
+    protected def reply(name: String, seqid: Int, result: ThriftStruct): Future[Array[Byte]] = {
+      try {
+        val memoryBuffer = new TMemoryBuffer(512)
+        val oprot = protocolFactory.getProtocol(memoryBuffer)
+  
+        oprot.writeMessageBegin(new TMessage(name, TMessageType.REPLY, seqid))
+        result.write(oprot)
+        oprot.writeMessageEnd()
+  
+        Future.value(Arrays.copyOfRange(memoryBuffer.getArray(), 0, memoryBuffer.length()))
+      } catch {
+        case e: Exception => Future.exception(e)
+      }
+    }
+  
+    final def apply(request: Array[Byte]): Future[Array[Byte]] = {
+      val inputTransport = new TMemoryInputTransport(request)
+      val iprot = protocolFactory.getProtocol(inputTransport)
+  
+      try {
+        val msg = iprot.readMessageBegin()
+        functionMap.get(msg.name) map { _.apply(iprot, msg.seqid) } getOrElse {
+          TProtocolUtil.skip(iprot, TType.STRUCT)
+          exception(msg.name, msg.seqid, TApplicationException.UNKNOWN_METHOD,
+            "Invalid method name: '" + msg.name + "'")
+        }
+      } catch {
+        case e: Exception => Future.exception(e)
+      }
+    }
+  
+    // ---- end boilerplate.
+  
+    addFunction("ping", { (iprot: TProtocol, seqid: Int) =>
+      try {
+        val args = PingArgs.decode(iprot)
+        iprot.readMessageEnd()
+        (try {
+          iface.ping()
+        } catch {
+          case e: Exception => Future.exception(e)
+        }) flatMap { value: String =>
+          reply("ping", seqid, PingResult(success = Some(value)))
+        } rescue {
+          case e: TimeoutException => {
+            reply("ping", seqid, PingResult(te = Some(e)))
+          }
+          case e => Future.exception(e)
+        }
+      } catch {
+        case e: TProtocolException => {
+          iprot.readMessageEnd()
+          exception("ping", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
+        }
+        case e: Exception => Future.exception(e)
+      }
+    })
+    addFunction("recPosts", { (iprot: TProtocol, seqid: Int) =>
+      try {
+        val args = RecPostsArgs.decode(iprot)
+        iprot.readMessageEnd()
+        (try {
+          iface.recPosts(args.userId)
+        } catch {
+          case e: Exception => Future.exception(e)
+        }) flatMap { value: PostList =>
+          reply("recPosts", seqid, RecPostsResult(success = Some(value)))
+        } rescue {
+          case e: NotFoundException => {
+            reply("recPosts", seqid, RecPostsResult(nfe = Some(e)))
+          }
+          case e: EngineException => {
+            reply("recPosts", seqid, RecPostsResult(ee = Some(e)))
+          }
+          case e: TimeoutException => {
+            reply("recPosts", seqid, RecPostsResult(te = Some(e)))
+          }
+          case e => Future.exception(e)
+        }
+      } catch {
+        case e: TProtocolException => {
+          iprot.readMessageEnd()
+          exception("recPosts", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
+        }
+        case e: Exception => Future.exception(e)
+      }
+    })
   }
 }

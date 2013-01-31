@@ -6,6 +6,7 @@ package october
 import com.twitter.scrooge.{ThriftException, ThriftStruct, ThriftStructCodec}
 import org.apache.thrift.protocol._
 import java.nio.ByteBuffer
+import com.twitter.finagle.SourcedException
 import scala.collection.mutable
 import scala.collection.{Map, Set}
 
@@ -62,7 +63,7 @@ object NotFoundException extends ThriftStructCodec[NotFoundException] {
 
 }
 
-trait NotFoundException extends ThriftException with ThriftStruct
+trait NotFoundException extends ThriftException with SourcedException with ThriftStruct
   with Product
   with java.io.Serializable
 {
