@@ -6,5 +6,5 @@
 
 require 'october_types'
 
-VERSION = %q"0.0.1"
+VERSION = %q"0.1.0"
 

@@ -5,6 +5,19 @@
 #
 
 
+module Action
+  READ = 0
+  VOTE_UP = 1
+  VOTE_DOWN = 2
+  VOTE_NEGATE = 3
+  POST = 4
+  COMMENT = 5
+  REPORT = 6
+  TAG = 7
+  VALUE_MAP = {0 => "READ", 1 => "VOTE_UP", 2 => "VOTE_DOWN", 3 => "VOTE_NEGATE", 4 => "POST", 5 => "COMMENT", 6 => "REPORT", 7 => "TAG"}
+  VALID_VALUES = Set.new([READ, VOTE_UP, VOTE_DOWN, VOTE_NEGATE, POST, COMMENT, REPORT, TAG]).freeze
+end
+
 # A single post with its calculated weight.
 # @param post_id, the unique id of a post.
 # @param weight, the "importance" of the post to the querying user [0,1].

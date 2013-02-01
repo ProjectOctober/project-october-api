@@ -45,6 +45,36 @@ module Recommender
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'recPosts failed: unknown result')
     end
 
+    def user_v_post(user_id, verb, post_id)
+      send_user_v_post(user_id, verb, post_id)
+      recv_user_v_post()
+    end
+
+    def send_user_v_post(user_id, verb, post_id)
+      send_message('user_v_post', User_v_post_args, :user_id => user_id, :verb => verb, :post_id => post_id)
+    end
+
+    def recv_user_v_post()
+      result = receive_message(User_v_post_result)
+      raise result.nfe unless result.nfe.nil?
+      return
+    end
+
+    def user_v_comment(user_id, verb, comment_id)
+      send_user_v_comment(user_id, verb, comment_id)
+      recv_user_v_comment()
+    end
+
+    def send_user_v_comment(user_id, verb, comment_id)
+      send_message('user_v_comment', User_v_comment_args, :user_id => user_id, :verb => verb, :comment_id => comment_id)
+    end
+
+    def recv_user_v_comment()
+      result = receive_message(User_v_comment_result)
+      raise result.nfe unless result.nfe.nil?
+      return
+    end
+
   end
 
   class Processor
@@ -74,6 +104,28 @@ module Recommender
         result.te = te
       end
       write_result(result, oprot, 'recPosts', seqid)
+    end
+
+    def process_user_v_post(seqid, iprot, oprot)
+      args = read_args(iprot, User_v_post_args)
+      result = User_v_post_result.new()
+      begin
+        @handler.user_v_post(args.user_id, args.verb, args.post_id)
+      rescue NotFoundException => nfe
+        result.nfe = nfe
+      end
+      write_result(result, oprot, 'user_v_post', seqid)
+    end
+
+    def process_user_v_comment(seqid, iprot, oprot)
+      args = read_args(iprot, User_v_comment_args)
+      result = User_v_comment_result.new()
+      begin
+        @handler.user_v_comment(args.user_id, args.verb, args.comment_id)
+      rescue NotFoundException => nfe
+        result.nfe = nfe
+      end
+      write_result(result, oprot, 'user_v_comment', seqid)
     end
 
   end
@@ -142,6 +194,90 @@ module Recommender
       NFE => {:type => ::Thrift::Types::STRUCT, :name => 'nfe', :class => NotFoundException},
       EE => {:type => ::Thrift::Types::STRUCT, :name => 'ee', :class => EngineException},
       TE => {:type => ::Thrift::Types::STRUCT, :name => 'te', :class => TimeoutException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class User_v_post_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    USER_ID = 1
+    VERB = 2
+    POST_ID = 3
+
+    FIELDS = {
+      USER_ID => {:type => ::Thrift::Types::I64, :name => 'user_id'},
+      VERB => {:type => ::Thrift::Types::I32, :name => 'verb', :enum_class => Action},
+      POST_ID => {:type => ::Thrift::Types::I64, :name => 'post_id'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user_id is unset!') unless @user_id
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field verb is unset!') unless @verb
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field post_id is unset!') unless @post_id
+      unless @verb.nil? || Action::VALID_VALUES.include?(@verb)
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field verb!')
+      end
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class User_v_post_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    NFE = 1
+
+    FIELDS = {
+      NFE => {:type => ::Thrift::Types::STRUCT, :name => 'nfe', :class => NotFoundException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class User_v_comment_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    USER_ID = 1
+    VERB = 2
+    COMMENT_ID = 3
+
+    FIELDS = {
+      USER_ID => {:type => ::Thrift::Types::I64, :name => 'user_id'},
+      VERB => {:type => ::Thrift::Types::I32, :name => 'verb', :enum_class => Action},
+      COMMENT_ID => {:type => ::Thrift::Types::I64, :name => 'comment_id'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user_id is unset!') unless @user_id
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field verb is unset!') unless @verb
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field comment_id is unset!') unless @comment_id
+      unless @verb.nil? || Action::VALID_VALUES.include?(@verb)
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field verb!')
+      end
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class User_v_comment_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    NFE = 1
+
+    FIELDS = {
+      NFE => {:type => ::Thrift::Types::STRUCT, :name => 'nfe', :class => NotFoundException}
     }
 
     def struct_fields; FIELDS; end
