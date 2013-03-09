@@ -5,7 +5,7 @@
 namespace java october
 
 # See the Semantic Versioning Specification (SemVer) http://semver.org.
-const string VERSION = "0.1.0"
+const string VERSION = "0.2.0"
 
 #
 # Structs
@@ -27,6 +27,13 @@ struct Post {
 struct PostList {
     1: optional double confidence,
     2: required list<Post> posts,
+}
+
+/** A user id from the frontend
+ * @param id, the id the frontend uses for a user
+ */
+struct User {
+    1: required i64 user_id,
 }
 
 /** The types of actions that can be performed in a triple (subject, verb, object) */
@@ -71,6 +78,11 @@ service Recommender {
      * @param user_id, the user that the posts are being requested for
      */
     PostList recPosts(1: required i64 user_id) throws (1: NotFoundException nfe, 2: EngineException ee, 3: TimeoutException te),
+
+    /** Informs the backend that a new user has been created
+     * @param user_id, the user that is being added
+     */
+    bool addUser(1: required i64 user_id) throws (1: EngineException ee, 2: TimeoutException te),
 
     /** Alert the recommender that a user has actioned a post
      * @param user_id, the user that performed the action
