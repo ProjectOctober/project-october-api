@@ -62,6 +62,25 @@ class PostList
   ::Thrift::Struct.generate_accessors self
 end
 
+# A user id from the frontend
+# @param id, the id the frontend uses for a user
+class User
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  USER_ID = 1
+
+  FIELDS = {
+    USER_ID => {:type => ::Thrift::Types::I64, :name => 'user_id'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user_id is unset!') unless @user_id
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 # The queried object does not exist.
 class NotFoundException < ::Thrift::Exception
   include ::Thrift::Struct, ::Thrift::Struct_Union

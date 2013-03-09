@@ -33,6 +33,12 @@ object Recommender {
     @throws(classOf[EngineException])
     @throws(classOf[TimeoutException])
     def recPosts(userId: Long): PostList
+    /** Informs the backend that a new user has been created
+         * @param user_id, the user that is being added
+         */
+    @throws(classOf[EngineException])
+    @throws(classOf[TimeoutException])
+    def addUser(userId: Long): Boolean
     /** Alert the recommender that a user has actioned a post
          * @param user_id, the user that performed the action
          * @param verb, the action taken (this is from the Action enum)
@@ -56,6 +62,10 @@ object Recommender {
          * @param user_id, the user that the posts are being requested for
          */
     def recPosts(userId: Long): Future[PostList]
+    /** Informs the backend that a new user has been created
+         * @param user_id, the user that is being added
+         */
+    def addUser(userId: Long): Future[Boolean]
     /** Alert the recommender that a user has actioned a post
          * @param user_id, the user that performed the action
          * @param verb, the action taken (this is from the Action enum)
@@ -629,6 +639,301 @@ object Recommender {
     }
   
     override def productPrefix: String = "RecPostsResult"
+  }
+  
+  object AddUserArgs extends ThriftStructCodec[AddUserArgs] {
+    val Struct = new TStruct("AddUserArgs")
+    val UserIdField = new TField("userId", TType.I64, 1)
+  
+    /**
+     * Checks that all required fields are non-null.
+     */
+    def validate(_item: AddUserArgs) {
+    }
+  
+    def encode(_item: AddUserArgs, _oproto: TProtocol) { _item.write(_oproto) }
+    def decode(_iprot: TProtocol) = Immutable.decode(_iprot)
+  
+    def apply(_iprot: TProtocol): AddUserArgs = decode(_iprot)
+  
+    def apply(
+      userId: Long
+    ): AddUserArgs = new Immutable(
+      userId
+    )
+  
+    def unapply(_item: AddUserArgs): Option[Long] = Some(_item.userId)
+  
+    object Immutable extends ThriftStructCodec[AddUserArgs] {
+      def encode(_item: AddUserArgs, _oproto: TProtocol) { _item.write(_oproto) }
+      def decode(_iprot: TProtocol) = {
+        var userId: Long = 0L
+        var _got_userId = false
+        var _done = false
+        _iprot.readStructBegin()
+        while (!_done) {
+          val _field = _iprot.readFieldBegin()
+          if (_field.`type` == TType.STOP) {
+            _done = true
+          } else {
+            _field.id match {
+              case 1 => { /* userId */
+                _field.`type` match {
+                  case TType.I64 => {
+                    userId = {
+                      _iprot.readI64()
+                    }
+                    _got_userId = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+            }
+            _iprot.readFieldEnd()
+          }
+        }
+        _iprot.readStructEnd()
+        if (!_got_userId) throw new TProtocolException("Required field 'AddUserArgs' was not found in serialized data for struct AddUserArgs")
+        new Immutable(
+          userId
+        )
+      }
+    }
+  
+    /**
+     * The default read-only implementation of AddUserArgs.  You typically should not need to
+     * directly reference this class; instead, use the AddUserArgs.apply method to construct
+     * new instances.
+     */
+    class Immutable(
+      val userId: Long
+    ) extends AddUserArgs
+  
+  }
+  
+  trait AddUserArgs extends ThriftStruct
+    with Product1[Long]
+    with java.io.Serializable
+  {
+    import AddUserArgs._
+  
+    def userId: Long
+  
+    def _1 = userId
+  
+    override def write(_oprot: TProtocol) {
+      AddUserArgs.validate(this)
+      _oprot.writeStructBegin(Struct)
+      if (true) {
+        val userId_item = userId
+        _oprot.writeFieldBegin(UserIdField)
+        _oprot.writeI64(userId_item)
+        _oprot.writeFieldEnd()
+      }
+      _oprot.writeFieldStop()
+      _oprot.writeStructEnd()
+    }
+  
+    def copy(
+      userId: Long = this.userId
+    ): AddUserArgs = new Immutable(
+      userId
+    )
+  
+    override def canEqual(other: Any): Boolean = other.isInstanceOf[AddUserArgs]
+  
+    override def equals(other: Any): Boolean = runtime.ScalaRunTime._equals(this, other)
+  
+    override def hashCode: Int = runtime.ScalaRunTime._hashCode(this)
+  
+    override def toString: String = runtime.ScalaRunTime._toString(this)
+  
+  
+    override def productArity: Int = 1
+  
+    override def productElement(n: Int): Any = n match {
+      case 0 => userId
+      case _ => throw new IndexOutOfBoundsException(n.toString)
+    }
+  
+    override def productPrefix: String = "AddUserArgs"
+  }
+  
+  object AddUserResult extends ThriftStructCodec[AddUserResult] {
+    val Struct = new TStruct("AddUserResult")
+    val SuccessField = new TField("success", TType.BOOL, 0)
+    val EeField = new TField("ee", TType.STRUCT, 1)
+    val TeField = new TField("te", TType.STRUCT, 2)
+  
+    /**
+     * Checks that all required fields are non-null.
+     */
+    def validate(_item: AddUserResult) {
+    }
+  
+    def encode(_item: AddUserResult, _oproto: TProtocol) { _item.write(_oproto) }
+    def decode(_iprot: TProtocol) = Immutable.decode(_iprot)
+  
+    def apply(_iprot: TProtocol): AddUserResult = decode(_iprot)
+  
+    def apply(
+      success: Option[Boolean] = None,
+      ee: Option[EngineException] = None,
+      te: Option[TimeoutException] = None
+    ): AddUserResult = new Immutable(
+      success,
+      ee,
+      te
+    )
+  
+    def unapply(_item: AddUserResult): Option[Product3[Option[Boolean], Option[EngineException], Option[TimeoutException]]] = Some(_item)
+  
+    object Immutable extends ThriftStructCodec[AddUserResult] {
+      def encode(_item: AddUserResult, _oproto: TProtocol) { _item.write(_oproto) }
+      def decode(_iprot: TProtocol) = {
+        var success: Boolean = false
+        var _got_success = false
+        var ee: EngineException = null
+        var _got_ee = false
+        var te: TimeoutException = null
+        var _got_te = false
+        var _done = false
+        _iprot.readStructBegin()
+        while (!_done) {
+          val _field = _iprot.readFieldBegin()
+          if (_field.`type` == TType.STOP) {
+            _done = true
+          } else {
+            _field.id match {
+              case 0 => { /* success */
+                _field.`type` match {
+                  case TType.BOOL => {
+                    success = {
+                      _iprot.readBool()
+                    }
+                    _got_success = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case 1 => { /* ee */
+                _field.`type` match {
+                  case TType.STRUCT => {
+                    ee = {
+                      EngineException.decode(_iprot)
+                    }
+                    _got_ee = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case 2 => { /* te */
+                _field.`type` match {
+                  case TType.STRUCT => {
+                    te = {
+                      TimeoutException.decode(_iprot)
+                    }
+                    _got_te = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+            }
+            _iprot.readFieldEnd()
+          }
+        }
+        _iprot.readStructEnd()
+        new Immutable(
+          if (_got_success) Some(success) else None,
+          if (_got_ee) Some(ee) else None,
+          if (_got_te) Some(te) else None
+        )
+      }
+    }
+  
+    /**
+     * The default read-only implementation of AddUserResult.  You typically should not need to
+     * directly reference this class; instead, use the AddUserResult.apply method to construct
+     * new instances.
+     */
+    class Immutable(
+      val success: Option[Boolean] = None,
+      val ee: Option[EngineException] = None,
+      val te: Option[TimeoutException] = None
+    ) extends AddUserResult
+  
+  }
+  
+  trait AddUserResult extends ThriftStruct
+    with Product3[Option[Boolean], Option[EngineException], Option[TimeoutException]]
+    with java.io.Serializable
+  {
+    import AddUserResult._
+  
+    def success: Option[Boolean]
+    def ee: Option[EngineException]
+    def te: Option[TimeoutException]
+  
+    def _1 = success
+    def _2 = ee
+    def _3 = te
+  
+    override def write(_oprot: TProtocol) {
+      AddUserResult.validate(this)
+      _oprot.writeStructBegin(Struct)
+      if (success.isDefined) {
+        val success_item = success.get
+        _oprot.writeFieldBegin(SuccessField)
+        _oprot.writeBool(success_item)
+        _oprot.writeFieldEnd()
+      }
+      if (ee.isDefined) {
+        val ee_item = ee.get
+        _oprot.writeFieldBegin(EeField)
+        ee_item.write(_oprot)
+        _oprot.writeFieldEnd()
+      }
+      if (te.isDefined) {
+        val te_item = te.get
+        _oprot.writeFieldBegin(TeField)
+        te_item.write(_oprot)
+        _oprot.writeFieldEnd()
+      }
+      _oprot.writeFieldStop()
+      _oprot.writeStructEnd()
+    }
+  
+    def copy(
+      success: Option[Boolean] = this.success, 
+      ee: Option[EngineException] = this.ee, 
+      te: Option[TimeoutException] = this.te
+    ): AddUserResult = new Immutable(
+      success, 
+      ee, 
+      te
+    )
+  
+    override def canEqual(other: Any): Boolean = other.isInstanceOf[AddUserResult]
+  
+    override def equals(other: Any): Boolean = runtime.ScalaRunTime._equals(this, other)
+  
+    override def hashCode: Int = runtime.ScalaRunTime._hashCode(this)
+  
+    override def toString: String = runtime.ScalaRunTime._toString(this)
+  
+  
+    override def productArity: Int = 3
+  
+    override def productElement(n: Int): Any = n match {
+      case 0 => success
+      case 1 => ee
+      case 2 => te
+      case _ => throw new IndexOutOfBoundsException(n.toString)
+    }
+  
+    override def productPrefix: String = "AddUserResult"
   }
   
   object UserVPostArgs extends ThriftStructCodec[UserVPostArgs] {
@@ -1333,6 +1638,35 @@ object Recommender {
         __stats_recPosts.FailuresScope.counter(ex.getClass.getName).incr()
       }
     }
+    private[this] object __stats_addUser {
+      val RequestsCounter = scopedStats.scope("addUser").counter("requests")
+      val SuccessCounter = scopedStats.scope("addUser").counter("success")
+      val FailuresCounter = scopedStats.scope("addUser").counter("failures")
+      val FailuresScope = scopedStats.scope("addUser").scope("failures")
+    }
+  
+    /** Informs the backend that a new user has been created
+         * @param user_id, the user that is being added
+         */
+    def addUser(userId: Long): Future[Boolean] = {
+      __stats_addUser.RequestsCounter.incr()
+      this.service(encodeRequest("addUser", AddUserArgs(userId))) flatMap { response =>
+        val result = decodeResponse(response, AddUserResult)
+        val exception =
+          (result.ee orElse result.te).map(Future.exception)
+        exception.orElse(result.success.map(Future.value)).getOrElse(Future.exception(missingResult("addUser")))
+      } rescue {
+        case ex: SourcedException => {
+          if (this.serviceName != "") { ex.serviceName = this.serviceName }
+          Future.exception(ex)
+        }
+      } onSuccess { _ =>
+        __stats_addUser.SuccessCounter.incr()
+      } onFailure { ex =>
+        __stats_addUser.FailuresCounter.incr()
+        __stats_addUser.FailuresScope.counter(ex.getClass.getName).incr()
+      }
+    }
     private[this] object __stats_userVPost {
       val RequestsCounter = scopedStats.scope("userVPost").counter("requests")
       val SuccessCounter = scopedStats.scope("userVPost").counter("success")
@@ -1508,6 +1842,33 @@ object Recommender {
         case e: TProtocolException => {
           iprot.readMessageEnd()
           exception("recPosts", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
+        }
+        case e: Exception => Future.exception(e)
+      }
+    })
+    addFunction("addUser", { (iprot: TProtocol, seqid: Int) =>
+      try {
+        val args = AddUserArgs.decode(iprot)
+        iprot.readMessageEnd()
+        (try {
+          iface.addUser(args.userId)
+        } catch {
+          case e: Exception => Future.exception(e)
+        }) flatMap { value: Boolean =>
+          reply("addUser", seqid, AddUserResult(success = Some(value)))
+        } rescue {
+          case e: EngineException => {
+            reply("addUser", seqid, AddUserResult(ee = Some(e)))
+          }
+          case e: TimeoutException => {
+            reply("addUser", seqid, AddUserResult(te = Some(e)))
+          }
+          case e => Future.exception(e)
+        }
+      } catch {
+        case e: TProtocolException => {
+          iprot.readMessageEnd()
+          exception("addUser", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
         }
         case e: Exception => Future.exception(e)
       }
