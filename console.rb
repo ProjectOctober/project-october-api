@@ -39,5 +39,5 @@ begin
   IRB.start_session(binding)
 
 rescue Thrift::TransportException => e
-  Rails.logger.error "Cannot Connect to Thrift Backend"
+  p "can't connect!" + e
 end
