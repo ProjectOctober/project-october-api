@@ -2,7 +2,7 @@
 # Defining the structs that are stored in Cassandra
 #
 # !!! ENSURE YOU UPDATE THE VERSION NUMBER WHEN UPDATING !!!
-namespace java cassie
+namespace java octocassie
 
 # See the Semantic Versioning Specification (SemVer) http://semver.org.
 const string VERSION = "0.0.1"
