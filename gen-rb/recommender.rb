@@ -62,6 +62,24 @@ module Recommender
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'addUser failed: unknown result')
     end
 
+    def addPost(user_id, post_id, raw_freq)
+      send_addPost(user_id, post_id, raw_freq)
+      return recv_addPost()
+    end
+
+    def send_addPost(user_id, post_id, raw_freq)
+      send_message('addPost', AddPost_args, :user_id => user_id, :post_id => post_id, :raw_freq => raw_freq)
+    end
+
+    def recv_addPost()
+      result = receive_message(AddPost_result)
+      return result.success unless result.success.nil?
+      raise result.ee unless result.ee.nil?
+      raise result.te unless result.te.nil?
+      raise result.nfe unless result.nfe.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'addPost failed: unknown result')
+    end
+
     def user_v_post(user_id, verb, post_id)
       send_user_v_post(user_id, verb, post_id)
       recv_user_v_post()
@@ -134,6 +152,21 @@ module Recommender
         result.te = te
       end
       write_result(result, oprot, 'addUser', seqid)
+    end
+
+    def process_addPost(seqid, iprot, oprot)
+      args = read_args(iprot, AddPost_args)
+      result = AddPost_result.new()
+      begin
+        result.success = @handler.addPost(args.user_id, args.post_id, args.raw_freq)
+      rescue EngineException => ee
+        result.ee = ee
+      rescue TimeoutException => te
+        result.te = te
+      rescue NotFoundException => nfe
+        result.nfe = nfe
+      end
+      write_result(result, oprot, 'addPost', seqid)
     end
 
     def process_user_v_post(seqid, iprot, oprot)
@@ -261,6 +294,51 @@ module Recommender
       SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
       EE => {:type => ::Thrift::Types::STRUCT, :name => 'ee', :class => EngineException},
       TE => {:type => ::Thrift::Types::STRUCT, :name => 'te', :class => TimeoutException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class AddPost_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    USER_ID = 1
+    POST_ID = 2
+    RAW_FREQ = 3
+
+    FIELDS = {
+      USER_ID => {:type => ::Thrift::Types::I64, :name => 'user_id'},
+      POST_ID => {:type => ::Thrift::Types::I64, :name => 'post_id'},
+      RAW_FREQ => {:type => ::Thrift::Types::LIST, :name => 'raw_freq', :element => {:type => ::Thrift::Types::STRUCT, :class => Token}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user_id is unset!') unless @user_id
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field post_id is unset!') unless @post_id
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field raw_freq is unset!') unless @raw_freq
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class AddPost_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    EE = 1
+    TE = 2
+    NFE = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      EE => {:type => ::Thrift::Types::STRUCT, :name => 'ee', :class => EngineException},
+      TE => {:type => ::Thrift::Types::STRUCT, :name => 'te', :class => TimeoutException},
+      NFE => {:type => ::Thrift::Types::STRUCT, :name => 'nfe', :class => NotFoundException}
     }
 
     def struct_fields; FIELDS; end

@@ -36,6 +36,15 @@ struct User {
     1: required i64 user_id,
 }
 
+/** A pair of token and frequency
+ * @param t, the token itself
+ * @param f, the count of the frequency of the token
+ */
+struct Token {
+    1: required string t,
+    2: required i32 f,
+}
+
 /** The types of actions that can be performed in a triple (subject, verb, object) */
 enum Action {
     READ,
@@ -83,6 +92,15 @@ service Recommender {
      * @param user_id, the user that is being added
      */
     bool addUser(1: required i64 user_id) throws (1: EngineException ee, 2: TimeoutException te),
+
+    /** Informs the backedn that a user has submitted a post
+     * @param user_id, the user that submitted the post
+     * @param post_id, the post the user submitted
+     * @param raw_freq, a list of <token, freq> pairs that correspond to the number of times a keyword is in a post.
+     */
+    bool addPost(1: required i64 user_id, 2: required i64 post_id, 3: required list<Token> raw_freq) throws (1: EngineException ee, 2: TimeoutException te, 3: NotFoundException nfe),
+
+    /* TODO: Consider deprecating the x_v_y functions below in favor of explicit functions. */
 
     /** Alert the recommender that a user has actioned a post
      * @param user_id, the user that performed the action

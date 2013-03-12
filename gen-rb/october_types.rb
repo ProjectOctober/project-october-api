@@ -81,6 +81,29 @@ class User
   ::Thrift::Struct.generate_accessors self
 end
 
+# A pair of token and frequency
+# @param t, the token itself
+# @param f, the count of the frequency of the token
+class Token
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  T = 1
+  F = 2
+
+  FIELDS = {
+    T => {:type => ::Thrift::Types::STRING, :name => 't'},
+    F => {:type => ::Thrift::Types::I32, :name => 'f'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field t is unset!') unless @t
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field f is unset!') unless @f
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 # The queried object does not exist.
 class NotFoundException < ::Thrift::Exception
   include ::Thrift::Struct, ::Thrift::Struct_Union

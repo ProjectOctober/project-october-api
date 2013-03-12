@@ -39,6 +39,15 @@ object Recommender {
     @throws(classOf[EngineException])
     @throws(classOf[TimeoutException])
     def addUser(userId: Long): Boolean
+    /** Informs the backedn that a user has submitted a post
+         * @param user_id, the user that submitted the post
+         * @param post_id, the post the user submitted
+         * @param raw_freq, a list of <token, freq> pairs that correspond to the number of times a keyword is in a post.
+         */
+    @throws(classOf[EngineException])
+    @throws(classOf[TimeoutException])
+    @throws(classOf[NotFoundException])
+    def addPost(userId: Long, postId: Long, rawFreq: Seq[Token] = Seq[Token]()): Boolean
     /** Alert the recommender that a user has actioned a post
          * @param user_id, the user that performed the action
          * @param verb, the action taken (this is from the Action enum)
@@ -66,6 +75,12 @@ object Recommender {
          * @param user_id, the user that is being added
          */
     def addUser(userId: Long): Future[Boolean]
+    /** Informs the backedn that a user has submitted a post
+         * @param user_id, the user that submitted the post
+         * @param post_id, the post the user submitted
+         * @param raw_freq, a list of <token, freq> pairs that correspond to the number of times a keyword is in a post.
+         */
+    def addPost(userId: Long, postId: Long, rawFreq: Seq[Token] = Seq[Token]()): Future[Boolean]
     /** Alert the recommender that a user has actioned a post
          * @param user_id, the user that performed the action
          * @param verb, the action taken (this is from the Action enum)
@@ -936,6 +951,405 @@ object Recommender {
     override def productPrefix: String = "AddUserResult"
   }
   
+  object AddPostArgs extends ThriftStructCodec[AddPostArgs] {
+    val Struct = new TStruct("AddPostArgs")
+    val UserIdField = new TField("userId", TType.I64, 1)
+    val PostIdField = new TField("postId", TType.I64, 2)
+    val RawFreqField = new TField("rawFreq", TType.LIST, 3)
+  
+    /**
+     * Checks that all required fields are non-null.
+     */
+    def validate(_item: AddPostArgs) {
+      if (_item.rawFreq == null) throw new TProtocolException("Required field rawFreq cannot be null")
+    }
+  
+    def encode(_item: AddPostArgs, _oproto: TProtocol) { _item.write(_oproto) }
+    def decode(_iprot: TProtocol) = Immutable.decode(_iprot)
+  
+    def apply(_iprot: TProtocol): AddPostArgs = decode(_iprot)
+  
+    def apply(
+      userId: Long,
+      postId: Long,
+      rawFreq: Seq[Token] = Seq[Token]()
+    ): AddPostArgs = new Immutable(
+      userId,
+      postId,
+      rawFreq
+    )
+  
+    def unapply(_item: AddPostArgs): Option[Product3[Long, Long, Seq[Token]]] = Some(_item)
+  
+    object Immutable extends ThriftStructCodec[AddPostArgs] {
+      def encode(_item: AddPostArgs, _oproto: TProtocol) { _item.write(_oproto) }
+      def decode(_iprot: TProtocol) = {
+        var userId: Long = 0L
+        var _got_userId = false
+        var postId: Long = 0L
+        var _got_postId = false
+        var rawFreq: Seq[Token] = Seq[Token]()
+        var _got_rawFreq = false
+        var _done = false
+        _iprot.readStructBegin()
+        while (!_done) {
+          val _field = _iprot.readFieldBegin()
+          if (_field.`type` == TType.STOP) {
+            _done = true
+          } else {
+            _field.id match {
+              case 1 => { /* userId */
+                _field.`type` match {
+                  case TType.I64 => {
+                    userId = {
+                      _iprot.readI64()
+                    }
+                    _got_userId = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case 2 => { /* postId */
+                _field.`type` match {
+                  case TType.I64 => {
+                    postId = {
+                      _iprot.readI64()
+                    }
+                    _got_postId = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case 3 => { /* rawFreq */
+                _field.`type` match {
+                  case TType.LIST => {
+                    rawFreq = {
+                      val _list = _iprot.readListBegin()
+                      val _rv = new mutable.ArrayBuffer[Token](_list.size)
+                      var _i = 0
+                      while (_i < _list.size) {
+                        _rv += {
+                          Token.decode(_iprot)
+                        }
+                        _i += 1
+                      }
+                      _iprot.readListEnd()
+                      _rv
+                    }
+                    _got_rawFreq = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+            }
+            _iprot.readFieldEnd()
+          }
+        }
+        _iprot.readStructEnd()
+        if (!_got_userId) throw new TProtocolException("Required field 'AddPostArgs' was not found in serialized data for struct AddPostArgs")
+        if (!_got_postId) throw new TProtocolException("Required field 'AddPostArgs' was not found in serialized data for struct AddPostArgs")
+        if (!_got_rawFreq) throw new TProtocolException("Required field 'AddPostArgs' was not found in serialized data for struct AddPostArgs")
+        new Immutable(
+          userId,
+          postId,
+          rawFreq
+        )
+      }
+    }
+  
+    /**
+     * The default read-only implementation of AddPostArgs.  You typically should not need to
+     * directly reference this class; instead, use the AddPostArgs.apply method to construct
+     * new instances.
+     */
+    class Immutable(
+      val userId: Long,
+      val postId: Long,
+      val rawFreq: Seq[Token] = Seq[Token]()
+    ) extends AddPostArgs
+  
+  }
+  
+  trait AddPostArgs extends ThriftStruct
+    with Product3[Long, Long, Seq[Token]]
+    with java.io.Serializable
+  {
+    import AddPostArgs._
+  
+    def userId: Long
+    def postId: Long
+    def rawFreq: Seq[Token]
+  
+    def _1 = userId
+    def _2 = postId
+    def _3 = rawFreq
+  
+    override def write(_oprot: TProtocol) {
+      AddPostArgs.validate(this)
+      _oprot.writeStructBegin(Struct)
+      if (true) {
+        val userId_item = userId
+        _oprot.writeFieldBegin(UserIdField)
+        _oprot.writeI64(userId_item)
+        _oprot.writeFieldEnd()
+      }
+      if (true) {
+        val postId_item = postId
+        _oprot.writeFieldBegin(PostIdField)
+        _oprot.writeI64(postId_item)
+        _oprot.writeFieldEnd()
+      }
+      if (true) {
+        val rawFreq_item = rawFreq
+        _oprot.writeFieldBegin(RawFreqField)
+        _oprot.writeListBegin(new TList(TType.STRUCT, rawFreq_item.size))
+        rawFreq_item.foreach { rawFreq_item_element =>
+          rawFreq_item_element.write(_oprot)
+        }
+        _oprot.writeListEnd()
+        _oprot.writeFieldEnd()
+      }
+      _oprot.writeFieldStop()
+      _oprot.writeStructEnd()
+    }
+  
+    def copy(
+      userId: Long = this.userId, 
+      postId: Long = this.postId, 
+      rawFreq: Seq[Token] = this.rawFreq
+    ): AddPostArgs = new Immutable(
+      userId, 
+      postId, 
+      rawFreq
+    )
+  
+    override def canEqual(other: Any): Boolean = other.isInstanceOf[AddPostArgs]
+  
+    override def equals(other: Any): Boolean = runtime.ScalaRunTime._equals(this, other)
+  
+    override def hashCode: Int = runtime.ScalaRunTime._hashCode(this)
+  
+    override def toString: String = runtime.ScalaRunTime._toString(this)
+  
+  
+    override def productArity: Int = 3
+  
+    override def productElement(n: Int): Any = n match {
+      case 0 => userId
+      case 1 => postId
+      case 2 => rawFreq
+      case _ => throw new IndexOutOfBoundsException(n.toString)
+    }
+  
+    override def productPrefix: String = "AddPostArgs"
+  }
+  
+  object AddPostResult extends ThriftStructCodec[AddPostResult] {
+    val Struct = new TStruct("AddPostResult")
+    val SuccessField = new TField("success", TType.BOOL, 0)
+    val EeField = new TField("ee", TType.STRUCT, 1)
+    val TeField = new TField("te", TType.STRUCT, 2)
+    val NfeField = new TField("nfe", TType.STRUCT, 3)
+  
+    /**
+     * Checks that all required fields are non-null.
+     */
+    def validate(_item: AddPostResult) {
+    }
+  
+    def encode(_item: AddPostResult, _oproto: TProtocol) { _item.write(_oproto) }
+    def decode(_iprot: TProtocol) = Immutable.decode(_iprot)
+  
+    def apply(_iprot: TProtocol): AddPostResult = decode(_iprot)
+  
+    def apply(
+      success: Option[Boolean] = None,
+      ee: Option[EngineException] = None,
+      te: Option[TimeoutException] = None,
+      nfe: Option[NotFoundException] = None
+    ): AddPostResult = new Immutable(
+      success,
+      ee,
+      te,
+      nfe
+    )
+  
+    def unapply(_item: AddPostResult): Option[Product4[Option[Boolean], Option[EngineException], Option[TimeoutException], Option[NotFoundException]]] = Some(_item)
+  
+    object Immutable extends ThriftStructCodec[AddPostResult] {
+      def encode(_item: AddPostResult, _oproto: TProtocol) { _item.write(_oproto) }
+      def decode(_iprot: TProtocol) = {
+        var success: Boolean = false
+        var _got_success = false
+        var ee: EngineException = null
+        var _got_ee = false
+        var te: TimeoutException = null
+        var _got_te = false
+        var nfe: NotFoundException = null
+        var _got_nfe = false
+        var _done = false
+        _iprot.readStructBegin()
+        while (!_done) {
+          val _field = _iprot.readFieldBegin()
+          if (_field.`type` == TType.STOP) {
+            _done = true
+          } else {
+            _field.id match {
+              case 0 => { /* success */
+                _field.`type` match {
+                  case TType.BOOL => {
+                    success = {
+                      _iprot.readBool()
+                    }
+                    _got_success = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case 1 => { /* ee */
+                _field.`type` match {
+                  case TType.STRUCT => {
+                    ee = {
+                      EngineException.decode(_iprot)
+                    }
+                    _got_ee = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case 2 => { /* te */
+                _field.`type` match {
+                  case TType.STRUCT => {
+                    te = {
+                      TimeoutException.decode(_iprot)
+                    }
+                    _got_te = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case 3 => { /* nfe */
+                _field.`type` match {
+                  case TType.STRUCT => {
+                    nfe = {
+                      NotFoundException.decode(_iprot)
+                    }
+                    _got_nfe = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+            }
+            _iprot.readFieldEnd()
+          }
+        }
+        _iprot.readStructEnd()
+        new Immutable(
+          if (_got_success) Some(success) else None,
+          if (_got_ee) Some(ee) else None,
+          if (_got_te) Some(te) else None,
+          if (_got_nfe) Some(nfe) else None
+        )
+      }
+    }
+  
+    /**
+     * The default read-only implementation of AddPostResult.  You typically should not need to
+     * directly reference this class; instead, use the AddPostResult.apply method to construct
+     * new instances.
+     */
+    class Immutable(
+      val success: Option[Boolean] = None,
+      val ee: Option[EngineException] = None,
+      val te: Option[TimeoutException] = None,
+      val nfe: Option[NotFoundException] = None
+    ) extends AddPostResult
+  
+  }
+  
+  trait AddPostResult extends ThriftStruct
+    with Product4[Option[Boolean], Option[EngineException], Option[TimeoutException], Option[NotFoundException]]
+    with java.io.Serializable
+  {
+    import AddPostResult._
+  
+    def success: Option[Boolean]
+    def ee: Option[EngineException]
+    def te: Option[TimeoutException]
+    def nfe: Option[NotFoundException]
+  
+    def _1 = success
+    def _2 = ee
+    def _3 = te
+    def _4 = nfe
+  
+    override def write(_oprot: TProtocol) {
+      AddPostResult.validate(this)
+      _oprot.writeStructBegin(Struct)
+      if (success.isDefined) {
+        val success_item = success.get
+        _oprot.writeFieldBegin(SuccessField)
+        _oprot.writeBool(success_item)
+        _oprot.writeFieldEnd()
+      }
+      if (ee.isDefined) {
+        val ee_item = ee.get
+        _oprot.writeFieldBegin(EeField)
+        ee_item.write(_oprot)
+        _oprot.writeFieldEnd()
+      }
+      if (te.isDefined) {
+        val te_item = te.get
+        _oprot.writeFieldBegin(TeField)
+        te_item.write(_oprot)
+        _oprot.writeFieldEnd()
+      }
+      if (nfe.isDefined) {
+        val nfe_item = nfe.get
+        _oprot.writeFieldBegin(NfeField)
+        nfe_item.write(_oprot)
+        _oprot.writeFieldEnd()
+      }
+      _oprot.writeFieldStop()
+      _oprot.writeStructEnd()
+    }
+  
+    def copy(
+      success: Option[Boolean] = this.success, 
+      ee: Option[EngineException] = this.ee, 
+      te: Option[TimeoutException] = this.te, 
+      nfe: Option[NotFoundException] = this.nfe
+    ): AddPostResult = new Immutable(
+      success, 
+      ee, 
+      te, 
+      nfe
+    )
+  
+    override def canEqual(other: Any): Boolean = other.isInstanceOf[AddPostResult]
+  
+    override def equals(other: Any): Boolean = runtime.ScalaRunTime._equals(this, other)
+  
+    override def hashCode: Int = runtime.ScalaRunTime._hashCode(this)
+  
+    override def toString: String = runtime.ScalaRunTime._toString(this)
+  
+  
+    override def productArity: Int = 4
+  
+    override def productElement(n: Int): Any = n match {
+      case 0 => success
+      case 1 => ee
+      case 2 => te
+      case 3 => nfe
+      case _ => throw new IndexOutOfBoundsException(n.toString)
+    }
+  
+    override def productPrefix: String = "AddPostResult"
+  }
+  
   object UserVPostArgs extends ThriftStructCodec[UserVPostArgs] {
     val Struct = new TStruct("UserVPostArgs")
     val UserIdField = new TField("userId", TType.I64, 1)
@@ -1667,6 +2081,37 @@ object Recommender {
         __stats_addUser.FailuresScope.counter(ex.getClass.getName).incr()
       }
     }
+    private[this] object __stats_addPost {
+      val RequestsCounter = scopedStats.scope("addPost").counter("requests")
+      val SuccessCounter = scopedStats.scope("addPost").counter("success")
+      val FailuresCounter = scopedStats.scope("addPost").counter("failures")
+      val FailuresScope = scopedStats.scope("addPost").scope("failures")
+    }
+  
+    /** Informs the backedn that a user has submitted a post
+         * @param user_id, the user that submitted the post
+         * @param post_id, the post the user submitted
+         * @param raw_freq, a list of <token, freq> pairs that correspond to the number of times a keyword is in a post.
+         */
+    def addPost(userId: Long, postId: Long, rawFreq: Seq[Token] = Seq[Token]()): Future[Boolean] = {
+      __stats_addPost.RequestsCounter.incr()
+      this.service(encodeRequest("addPost", AddPostArgs(userId, postId, rawFreq))) flatMap { response =>
+        val result = decodeResponse(response, AddPostResult)
+        val exception =
+          (result.ee orElse result.te orElse result.nfe).map(Future.exception)
+        exception.orElse(result.success.map(Future.value)).getOrElse(Future.exception(missingResult("addPost")))
+      } rescue {
+        case ex: SourcedException => {
+          if (this.serviceName != "") { ex.serviceName = this.serviceName }
+          Future.exception(ex)
+        }
+      } onSuccess { _ =>
+        __stats_addPost.SuccessCounter.incr()
+      } onFailure { ex =>
+        __stats_addPost.FailuresCounter.incr()
+        __stats_addPost.FailuresScope.counter(ex.getClass.getName).incr()
+      }
+    }
     private[this] object __stats_userVPost {
       val RequestsCounter = scopedStats.scope("userVPost").counter("requests")
       val SuccessCounter = scopedStats.scope("userVPost").counter("success")
@@ -1869,6 +2314,36 @@ object Recommender {
         case e: TProtocolException => {
           iprot.readMessageEnd()
           exception("addUser", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
+        }
+        case e: Exception => Future.exception(e)
+      }
+    })
+    addFunction("addPost", { (iprot: TProtocol, seqid: Int) =>
+      try {
+        val args = AddPostArgs.decode(iprot)
+        iprot.readMessageEnd()
+        (try {
+          iface.addPost(args.userId, args.postId, args.rawFreq)
+        } catch {
+          case e: Exception => Future.exception(e)
+        }) flatMap { value: Boolean =>
+          reply("addPost", seqid, AddPostResult(success = Some(value)))
+        } rescue {
+          case e: EngineException => {
+            reply("addPost", seqid, AddPostResult(ee = Some(e)))
+          }
+          case e: TimeoutException => {
+            reply("addPost", seqid, AddPostResult(te = Some(e)))
+          }
+          case e: NotFoundException => {
+            reply("addPost", seqid, AddPostResult(nfe = Some(e)))
+          }
+          case e => Future.exception(e)
+        }
+      } catch {
+        case e: TProtocolException => {
+          iprot.readMessageEnd()
+          exception("addPost", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
         }
         case e: Exception => Future.exception(e)
       }
