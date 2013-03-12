@@ -5,159 +5,161 @@
 #
 
 
-module Action
-  READ = 0
-  VOTE_UP = 1
-  VOTE_DOWN = 2
-  VOTE_NEGATE = 3
-  POST = 4
-  COMMENT = 5
-  REPORT = 6
-  TAG = 7
-  VALUE_MAP = {0 => "READ", 1 => "VOTE_UP", 2 => "VOTE_DOWN", 3 => "VOTE_NEGATE", 4 => "POST", 5 => "COMMENT", 6 => "REPORT", 7 => "TAG"}
-  VALID_VALUES = Set.new([READ, VOTE_UP, VOTE_DOWN, VOTE_NEGATE, POST, COMMENT, REPORT, TAG]).freeze
-end
+module Backend
+    module Action
+      READ = 0
+      VOTE_UP = 1
+      VOTE_DOWN = 2
+      VOTE_NEGATE = 3
+      POST = 4
+      COMMENT = 5
+      REPORT = 6
+      TAG = 7
+      VALUE_MAP = {0 => "READ", 1 => "VOTE_UP", 2 => "VOTE_DOWN", 3 => "VOTE_NEGATE", 4 => "POST", 5 => "COMMENT", 6 => "REPORT", 7 => "TAG"}
+      VALID_VALUES = Set.new([READ, VOTE_UP, VOTE_DOWN, VOTE_NEGATE, POST, COMMENT, REPORT, TAG]).freeze
+    end
 
-# A single post with its calculated weight.
-# @param post_id, the unique id of a post.
-# @param weight, the "importance" of the post to the querying user [0,1].
-class Post
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  POST_ID = 1
-  WEIGHT = 2
+    # A single post with its calculated weight.
+    # @param post_id, the unique id of a post.
+    # @param weight, the "importance" of the post to the querying user [0,1].
+    class Post
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      POST_ID = 1
+      WEIGHT = 2
 
-  FIELDS = {
-    POST_ID => {:type => ::Thrift::Types::I64, :name => 'post_id'},
-    WEIGHT => {:type => ::Thrift::Types::DOUBLE, :name => 'weight', :optional => true}
-  }
+      FIELDS = {
+        POST_ID => {:type => ::Thrift::Types::I64, :name => 'post_id'},
+        WEIGHT => {:type => ::Thrift::Types::DOUBLE, :name => 'weight', :optional => true}
+      }
 
-  def struct_fields; FIELDS; end
+      def struct_fields; FIELDS; end
 
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field post_id is unset!') unless @post_id
+      def validate
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field post_id is unset!') unless @post_id
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    # A list of posts along with a confidence for the accuracy of the list.
+    # @param confidence, the confidence in the results.
+    # @param posts, a list of Posts.
+    class PostList
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      CONFIDENCE = 1
+      POSTS = 2
+
+      FIELDS = {
+        CONFIDENCE => {:type => ::Thrift::Types::DOUBLE, :name => 'confidence', :optional => true},
+        POSTS => {:type => ::Thrift::Types::LIST, :name => 'posts', :element => {:type => ::Thrift::Types::STRUCT, :class => Backend::Post}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field posts is unset!') unless @posts
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    # A user id from the frontend
+    # @param id, the id the frontend uses for a user
+    class User
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      USER_ID = 1
+
+      FIELDS = {
+        USER_ID => {:type => ::Thrift::Types::I64, :name => 'user_id'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user_id is unset!') unless @user_id
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    # A pair of token and frequency
+    # @param t, the token itself
+    # @param f, the count of the frequency of the token
+    class Token
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      T = 1
+      F = 2
+
+      FIELDS = {
+        T => {:type => ::Thrift::Types::STRING, :name => 't'},
+        F => {:type => ::Thrift::Types::I32, :name => 'f'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field t is unset!') unless @t
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field f is unset!') unless @f
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    # The queried object does not exist.
+    class NotFoundException < ::Thrift::Exception
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+
+      FIELDS = {
+
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    # There was an error processing the request
+    class EngineException < ::Thrift::Exception
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      def initialize(message=nil)
+        super()
+        self.why = message
+      end
+
+      def message; why end
+
+      WHY = 1
+
+      FIELDS = {
+        WHY => {:type => ::Thrift::Types::STRING, :name => 'why'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field why is unset!') unless @why
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    # Request took too long to process
+    class TimeoutException < ::Thrift::Exception
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+
+      FIELDS = {
+
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
   end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-# A list of posts along with a confidence for the accuracy of the list.
-# @param confidence, the confidence in the results.
-# @param posts, a list of Posts.
-class PostList
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  CONFIDENCE = 1
-  POSTS = 2
-
-  FIELDS = {
-    CONFIDENCE => {:type => ::Thrift::Types::DOUBLE, :name => 'confidence', :optional => true},
-    POSTS => {:type => ::Thrift::Types::LIST, :name => 'posts', :element => {:type => ::Thrift::Types::STRUCT, :class => Post}}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field posts is unset!') unless @posts
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-# A user id from the frontend
-# @param id, the id the frontend uses for a user
-class User
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  USER_ID = 1
-
-  FIELDS = {
-    USER_ID => {:type => ::Thrift::Types::I64, :name => 'user_id'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user_id is unset!') unless @user_id
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-# A pair of token and frequency
-# @param t, the token itself
-# @param f, the count of the frequency of the token
-class Token
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  T = 1
-  F = 2
-
-  FIELDS = {
-    T => {:type => ::Thrift::Types::STRING, :name => 't'},
-    F => {:type => ::Thrift::Types::I32, :name => 'f'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field t is unset!') unless @t
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field f is unset!') unless @f
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-# The queried object does not exist.
-class NotFoundException < ::Thrift::Exception
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-
-  FIELDS = {
-
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-# There was an error processing the request
-class EngineException < ::Thrift::Exception
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  def initialize(message=nil)
-    super()
-    self.why = message
-  end
-
-  def message; why end
-
-  WHY = 1
-
-  FIELDS = {
-    WHY => {:type => ::Thrift::Types::STRING, :name => 'why'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field why is unset!') unless @why
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-# Request took too long to process
-class TimeoutException < ::Thrift::Exception
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-
-  FIELDS = {
-
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-

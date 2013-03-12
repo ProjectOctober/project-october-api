@@ -3,6 +3,7 @@
 #
 # !!! ENSURE YOU UPDATE THE VERSION NUMBER WHEN UPDATING !!!
 namespace java october
+namespace rb Backend
 
 # See the Semantic Versioning Specification (SemVer) http://semver.org.
 const string VERSION = "0.2.0"
