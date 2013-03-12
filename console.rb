@@ -33,7 +33,7 @@ end
 begin
   transport = Thrift::FramedTransport.new(Thrift::Socket.new('127.0.0.1', 9090))
   protocol = Thrift::BinaryProtocol.new(transport)
-  client = Recommender::Client.new(protocol)
+  client = Backend::Recommender::Client.new(protocol)
   transport.open()
 
   IRB.start_session(binding)
