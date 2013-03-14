@@ -31,19 +31,19 @@ object PostVector extends ThriftStructCodec[PostVector] {
   def apply(_iprot: TProtocol): PostVector = decode(_iprot)
 
   def apply(
-    vec: Seq[Token] = Seq[Token](),
+    vec: Seq[Pair] = Seq[Pair](),
     time: Int
   ): PostVector = new Immutable(
     vec,
     time
   )
 
-  def unapply(_item: PostVector): Option[Product2[Seq[Token], Int]] = Some(_item)
+  def unapply(_item: PostVector): Option[Product2[Seq[Pair], Int]] = Some(_item)
 
   object Immutable extends ThriftStructCodec[PostVector] {
     def encode(_item: PostVector, _oproto: TProtocol) { _item.write(_oproto) }
     def decode(_iprot: TProtocol) = {
-      var vec: Seq[Token] = Seq[Token]()
+      var vec: Seq[Pair] = Seq[Pair]()
       var _got_vec = false
       var time: Int = 0
       var _got_time = false
@@ -60,11 +60,11 @@ object PostVector extends ThriftStructCodec[PostVector] {
                 case TType.LIST => {
                   vec = {
                     val _list = _iprot.readListBegin()
-                    val _rv = new mutable.ArrayBuffer[Token](_list.size)
+                    val _rv = new mutable.ArrayBuffer[Pair](_list.size)
                     var _i = 0
                     while (_i < _list.size) {
                       _rv += {
-                        Token.decode(_iprot)
+                        Pair.decode(_iprot)
                       }
                       _i += 1
                     }
@@ -108,7 +108,7 @@ object PostVector extends ThriftStructCodec[PostVector] {
    * new instances.
    */
   class Immutable(
-    val vec: Seq[Token] = Seq[Token](),
+    val vec: Seq[Pair] = Seq[Pair](),
     val time: Int
   ) extends PostVector
 
@@ -119,18 +119,18 @@ object PostVector extends ThriftStructCodec[PostVector] {
    */
   trait Proxy extends PostVector {
     protected def _underlying_PostVector: PostVector
-    def vec: Seq[Token] = _underlying_PostVector.vec
+    def vec: Seq[Pair] = _underlying_PostVector.vec
     def time: Int = _underlying_PostVector.time
   }
 }
 
 trait PostVector extends ThriftStruct
-  with Product2[Seq[Token], Int]
+  with Product2[Seq[Pair], Int]
   with java.io.Serializable
 {
   import PostVector._
 
-  def vec: Seq[Token]
+  def vec: Seq[Pair]
   def time: Int
 
   def _1 = vec
@@ -160,7 +160,7 @@ trait PostVector extends ThriftStruct
   }
 
   def copy(
-    vec: Seq[Token] = this.vec, 
+    vec: Seq[Pair] = this.vec, 
     time: Int = this.time
   ): PostVector = new Immutable(
     vec, 

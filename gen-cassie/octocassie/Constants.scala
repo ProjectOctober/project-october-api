@@ -5,5 +5,5 @@ package octocassie
 
 object Constants {
   
-  val VERSION: String = "0.0.1"
+  val VERSION: String = "0.1.0"
 }
