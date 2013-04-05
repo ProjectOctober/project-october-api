@@ -108,12 +108,12 @@ service Recommender {
      * @param verb, the action taken (this is from the Action enum)
      * @param post_id, the post that the action is being performed on
      */
-    void user_v_post(1: required i64 user_id, 2: required Action verb, 3: required i64 post_id) throws (1: NotFoundException nfe),
+    bool user_v_post(1: required i64 user_id, 2: required Action verb, 3: required i64 post_id) throws (1: NotFoundException nfe),
 
     /** Alert the recommender that a user has actioned a comment
      * @param user_id, the user that performed the action
      * @param verb, the action taken (this is from the Action enum)
      * @param comment_id, the comment that the action is being performed on
      */
-    void user_v_comment(1: required i64 user_id, 2: required Action verb, 3: required i64 comment_id) throws (1: NotFoundException nfe),
+    bool user_v_comment(1: required i64 user_id, 2: required Action verb, 3: required i64 comment_id) throws (1: NotFoundException nfe),
 }
