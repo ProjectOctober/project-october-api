@@ -69,10 +69,10 @@ object Recommender {
     @throws(classOf[NotFoundException])
     def userTopTerms(userId: Long, limit: Long): Map[String, Long]
     /** Return a list of documents in sorted order of relevance for a search query
-         * @param query, a list of tokens
+         * @param query, a map of tokens to their weight
          */
     @throws(classOf[EngineException])
-    def textSearch(tokens: Seq[String] = Seq[String]()): Seq[Long]
+    def textSearch(tokens: Seq[String] = Seq[String]()): Map[Long, Double]
   }
 
   trait FutureIface {
@@ -110,9 +110,9 @@ object Recommender {
          */
     def userTopTerms(userId: Long, limit: Long): Future[Map[String, Long]]
     /** Return a list of documents in sorted order of relevance for a search query
-         * @param query, a list of tokens
+         * @param query, a map of tokens to their weight
          */
-    def textSearch(tokens: Seq[String] = Seq[String]()): Future[Seq[Long]]
+    def textSearch(tokens: Seq[String] = Seq[String]()): Future[Map[Long, Double]]
   }
 
   
@@ -2477,7 +2477,7 @@ object Recommender {
   
   object TextSearchResult extends ThriftStructCodec[TextSearchResult] {
     val Struct = new TStruct("TextSearchResult")
-    val SuccessField = new TField("success", TType.LIST, 0)
+    val SuccessField = new TField("success", TType.MAP, 0)
     val EeField = new TField("ee", TType.STRUCT, 1)
   
     /**
@@ -2492,19 +2492,19 @@ object Recommender {
     def apply(_iprot: TProtocol): TextSearchResult = decode(_iprot)
   
     def apply(
-      success: Option[Seq[Long]] = None,
+      success: Option[Map[Long, Double]] = None,
       ee: Option[EngineException] = None
     ): TextSearchResult = new Immutable(
       success,
       ee
     )
   
-    def unapply(_item: TextSearchResult): Option[Product2[Option[Seq[Long]], Option[EngineException]]] = Some(_item)
+    def unapply(_item: TextSearchResult): Option[Product2[Option[Map[Long, Double]], Option[EngineException]]] = Some(_item)
   
     object Immutable extends ThriftStructCodec[TextSearchResult] {
       def encode(_item: TextSearchResult, _oproto: TProtocol) { _item.write(_oproto) }
       def decode(_iprot: TProtocol) = {
-        var success: Seq[Long] = Seq[Long]()
+        var success: Map[Long, Double] = Map[Long, Double]()
         var _got_success = false
         var ee: EngineException = null
         var _got_ee = false
@@ -2518,18 +2518,22 @@ object Recommender {
             _field.id match {
               case 0 => { /* success */
                 _field.`type` match {
-                  case TType.LIST => {
+                  case TType.MAP => {
                     success = {
-                      val _list = _iprot.readListBegin()
-                      val _rv = new mutable.ArrayBuffer[Long](_list.size)
+                      val _map = _iprot.readMapBegin()
+                      val _rv = new mutable.HashMap[Long, Double]
                       var _i = 0
-                      while (_i < _list.size) {
-                        _rv += {
+                      while (_i < _map.size) {
+                        val _key = {
                           _iprot.readI64()
                         }
+                        val _value = {
+                          _iprot.readDouble()
+                        }
+                        _rv(_key) = _value
                         _i += 1
                       }
-                      _iprot.readListEnd()
+                      _iprot.readMapEnd()
                       _rv
                     }
                     _got_success = true
@@ -2567,19 +2571,19 @@ object Recommender {
      * new instances.
      */
     class Immutable(
-      val success: Option[Seq[Long]] = None,
+      val success: Option[Map[Long, Double]] = None,
       val ee: Option[EngineException] = None
     ) extends TextSearchResult
   
   }
   
   trait TextSearchResult extends ThriftStruct
-    with Product2[Option[Seq[Long]], Option[EngineException]]
+    with Product2[Option[Map[Long, Double]], Option[EngineException]]
     with java.io.Serializable
   {
     import TextSearchResult._
   
-    def success: Option[Seq[Long]]
+    def success: Option[Map[Long, Double]]
     def ee: Option[EngineException]
   
     def _1 = success
@@ -2591,11 +2595,14 @@ object Recommender {
       if (success.isDefined) {
         val success_item = success.get
         _oprot.writeFieldBegin(SuccessField)
-        _oprot.writeListBegin(new TList(TType.I64, success_item.size))
-        success_item.foreach { success_item_element =>
-          _oprot.writeI64(success_item_element)
+        _oprot.writeMapBegin(new TMap(TType.I64, TType.DOUBLE, success_item.size))
+        success_item.foreach { _pair =>
+          val success_item_key = _pair._1
+          val success_item_value = _pair._2
+          _oprot.writeI64(success_item_key)
+          _oprot.writeDouble(success_item_value)
         }
-        _oprot.writeListEnd()
+        _oprot.writeMapEnd()
         _oprot.writeFieldEnd()
       }
       if (ee.isDefined) {
@@ -2609,7 +2616,7 @@ object Recommender {
     }
   
     def copy(
-      success: Option[Seq[Long]] = this.success, 
+      success: Option[Map[Long, Double]] = this.success, 
       ee: Option[EngineException] = this.ee
     ): TextSearchResult = new Immutable(
       success, 
@@ -2902,9 +2909,9 @@ object Recommender {
     }
   
     /** Return a list of documents in sorted order of relevance for a search query
-         * @param query, a list of tokens
+         * @param query, a map of tokens to their weight
          */
-    def textSearch(tokens: Seq[String] = Seq[String]()): Future[Seq[Long]] = {
+    def textSearch(tokens: Seq[String] = Seq[String]()): Future[Map[Long, Double]] = {
       __stats_textSearch.RequestsCounter.incr()
       this.service(encodeRequest("textSearch", TextSearchArgs(tokens))) flatMap { response =>
         val result = decodeResponse(response, TextSearchResult)
@@ -3177,7 +3184,7 @@ object Recommender {
           iface.textSearch(args.tokens)
         } catch {
           case e: Exception => Future.exception(e)
-        }) flatMap { value: Seq[Long] =>
+        }) flatMap { value: Map[Long, Double] =>
           reply("textSearch", seqid, TextSearchResult(success = Some(value)))
         } rescue {
           case e: EngineException => {

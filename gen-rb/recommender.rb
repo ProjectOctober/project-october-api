@@ -555,7 +555,7 @@ require 'october_types'
           EE = 1
 
           FIELDS = {
-            SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::I64}},
+            SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::DOUBLE}},
             EE => {:type => ::Thrift::Types::STRUCT, :name => 'ee', :class => Backend::EngineException}
           }
 

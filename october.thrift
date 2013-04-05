@@ -124,7 +124,7 @@ service Recommender {
     map<string, i64> user_top_terms(1: required i64 user_id, 2: required i64 limit) throws (1: NotFoundException nfe),
 
     /** Return a list of documents in sorted order of relevance for a search query
-     * @param query, a list of tokens
+     * @param query, a map of tokens to their weight
      */
-    list<i64> text_search(1: required list<string> tokens) throws (1: EngineException ee),
+    map<i64, double> text_search(1: required list<string> tokens) throws (1: EngineException ee),
 }
