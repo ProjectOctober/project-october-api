@@ -83,7 +83,7 @@ require 'october_types'
 
           def user_v_post(user_id, verb, post_id)
             send_user_v_post(user_id, verb, post_id)
-            recv_user_v_post()
+            return recv_user_v_post()
           end
 
           def send_user_v_post(user_id, verb, post_id)
@@ -92,13 +92,14 @@ require 'october_types'
 
           def recv_user_v_post()
             result = receive_message(User_v_post_result)
+            return result.success unless result.success.nil?
             raise result.nfe unless result.nfe.nil?
-            return
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'user_v_post failed: unknown result')
           end
 
           def user_v_comment(user_id, verb, comment_id)
             send_user_v_comment(user_id, verb, comment_id)
-            recv_user_v_comment()
+            return recv_user_v_comment()
           end
 
           def send_user_v_comment(user_id, verb, comment_id)
@@ -107,8 +108,41 @@ require 'october_types'
 
           def recv_user_v_comment()
             result = receive_message(User_v_comment_result)
+            return result.success unless result.success.nil?
             raise result.nfe unless result.nfe.nil?
-            return
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'user_v_comment failed: unknown result')
+          end
+
+          def user_top_terms(user_id, limit)
+            send_user_top_terms(user_id, limit)
+            return recv_user_top_terms()
+          end
+
+          def send_user_top_terms(user_id, limit)
+            send_message('user_top_terms', User_top_terms_args, :user_id => user_id, :limit => limit)
+          end
+
+          def recv_user_top_terms()
+            result = receive_message(User_top_terms_result)
+            return result.success unless result.success.nil?
+            raise result.nfe unless result.nfe.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'user_top_terms failed: unknown result')
+          end
+
+          def text_search(tokens)
+            send_text_search(tokens)
+            return recv_text_search()
+          end
+
+          def send_text_search(tokens)
+            send_message('text_search', Text_search_args, :tokens => tokens)
+          end
+
+          def recv_text_search()
+            result = receive_message(Text_search_result)
+            return result.success unless result.success.nil?
+            raise result.ee unless result.ee.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'text_search failed: unknown result')
           end
 
         end
@@ -174,7 +208,7 @@ require 'october_types'
             args = read_args(iprot, User_v_post_args)
             result = User_v_post_result.new()
             begin
-              @handler.user_v_post(args.user_id, args.verb, args.post_id)
+              result.success = @handler.user_v_post(args.user_id, args.verb, args.post_id)
             rescue Backend::NotFoundException => nfe
               result.nfe = nfe
             end
@@ -185,11 +219,33 @@ require 'october_types'
             args = read_args(iprot, User_v_comment_args)
             result = User_v_comment_result.new()
             begin
-              @handler.user_v_comment(args.user_id, args.verb, args.comment_id)
+              result.success = @handler.user_v_comment(args.user_id, args.verb, args.comment_id)
             rescue Backend::NotFoundException => nfe
               result.nfe = nfe
             end
             write_result(result, oprot, 'user_v_comment', seqid)
+          end
+
+          def process_user_top_terms(seqid, iprot, oprot)
+            args = read_args(iprot, User_top_terms_args)
+            result = User_top_terms_result.new()
+            begin
+              result.success = @handler.user_top_terms(args.user_id, args.limit)
+            rescue Backend::NotFoundException => nfe
+              result.nfe = nfe
+            end
+            write_result(result, oprot, 'user_top_terms', seqid)
+          end
+
+          def process_text_search(seqid, iprot, oprot)
+            args = read_args(iprot, Text_search_args)
+            result = Text_search_result.new()
+            begin
+              result.success = @handler.text_search(args.tokens)
+            rescue Backend::EngineException => ee
+              result.ee = ee
+            end
+            write_result(result, oprot, 'text_search', seqid)
           end
 
         end
@@ -378,9 +434,11 @@ require 'october_types'
 
         class User_v_post_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
           NFE = 1
 
           FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
             NFE => {:type => ::Thrift::Types::STRUCT, :name => 'nfe', :class => Backend::NotFoundException}
           }
 
@@ -420,10 +478,85 @@ require 'october_types'
 
         class User_v_comment_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
           NFE = 1
 
           FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
             NFE => {:type => ::Thrift::Types::STRUCT, :name => 'nfe', :class => Backend::NotFoundException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class User_top_terms_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          USER_ID = 1
+          LIMIT = 2
+
+          FIELDS = {
+            USER_ID => {:type => ::Thrift::Types::I64, :name => 'user_id'},
+            LIMIT => {:type => ::Thrift::Types::I64, :name => 'limit'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user_id is unset!') unless @user_id
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field limit is unset!') unless @limit
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class User_top_terms_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          NFE = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::I64}},
+            NFE => {:type => ::Thrift::Types::STRUCT, :name => 'nfe', :class => Backend::NotFoundException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Text_search_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          TOKENS = 1
+
+          FIELDS = {
+            TOKENS => {:type => ::Thrift::Types::LIST, :name => 'tokens', :element => {:type => ::Thrift::Types::STRING}}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tokens is unset!') unless @tokens
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Text_search_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          EE = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::I64}},
+            EE => {:type => ::Thrift::Types::STRUCT, :name => 'ee', :class => Backend::EngineException}
           }
 
           def struct_fields; FIELDS; end

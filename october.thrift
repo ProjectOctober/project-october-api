@@ -116,4 +116,15 @@ service Recommender {
      * @param comment_id, the comment that the action is being performed on
      */
     bool user_v_comment(1: required i64 user_id, 2: required Action verb, 3: required i64 comment_id) throws (1: NotFoundException nfe),
+
+    /** Return the list of top n tokens for a user
+     * @param user_id, the user to query for
+     * @param limit, the maximum amount of tokens to return 
+     */
+    map<string, i64> user_top_terms(1: required i64 user_id, 2: required i64 limit) throws (1: NotFoundException nfe),
+
+    /** Return a list of documents in sorted order of relevance for a search query
+     * @param query, a list of tokens
+     */
+    list<i64> text_search(1: required list<string> tokens) throws (1: EngineException ee),
 }
