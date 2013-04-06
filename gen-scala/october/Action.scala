@@ -19,24 +19,28 @@ case object Action {
     val value = 2
     val name = "VoteDown"
   }
-  case object VoteNegate extends Action {
+  case object VoteUpNegate extends Action {
     val value = 3
-    val name = "VoteNegate"
+    val name = "VoteUpNegate"
+  }
+  case object VoteDownNegate extends Action {
+    val value = 4
+    val name = "VoteDownNegate"
   }
   case object Post extends Action {
-    val value = 4
+    val value = 5
     val name = "Post"
   }
   case object Comment extends Action {
-    val value = 5
+    val value = 6
     val name = "Comment"
   }
   case object Report extends Action {
-    val value = 6
+    val value = 7
     val name = "Report"
   }
   case object Tag extends Action {
-    val value = 7
+    val value = 8
     val name = "Tag"
   }
 
@@ -49,11 +53,12 @@ case object Action {
       case 0 => Read
       case 1 => VoteUp
       case 2 => VoteDown
-      case 3 => VoteNegate
-      case 4 => Post
-      case 5 => Comment
-      case 6 => Report
-      case 7 => Tag
+      case 3 => VoteUpNegate
+      case 4 => VoteDownNegate
+      case 5 => Post
+      case 6 => Comment
+      case 7 => Report
+      case 8 => Tag
       case _ => throw new NoSuchElementException(value.toString)
     }
   }
@@ -67,11 +72,12 @@ case object Action {
       case 0 => scala.Some(Read)
       case 1 => scala.Some(VoteUp)
       case 2 => scala.Some(VoteDown)
-      case 3 => scala.Some(VoteNegate)
-      case 4 => scala.Some(Post)
-      case 5 => scala.Some(Comment)
-      case 6 => scala.Some(Report)
-      case 7 => scala.Some(Tag)
+      case 3 => scala.Some(VoteUpNegate)
+      case 4 => scala.Some(VoteDownNegate)
+      case 5 => scala.Some(Post)
+      case 6 => scala.Some(Comment)
+      case 7 => scala.Some(Report)
+      case 8 => scala.Some(Tag)
       case _ => scala.None
     }
   }
@@ -81,7 +87,8 @@ case object Action {
       case "read" => scala.Some(Action.Read)
       case "voteup" => scala.Some(Action.VoteUp)
       case "votedown" => scala.Some(Action.VoteDown)
-      case "votenegate" => scala.Some(Action.VoteNegate)
+      case "voteupnegate" => scala.Some(Action.VoteUpNegate)
+      case "votedownnegate" => scala.Some(Action.VoteDownNegate)
       case "post" => scala.Some(Action.Post)
       case "comment" => scala.Some(Action.Comment)
       case "report" => scala.Some(Action.Report)

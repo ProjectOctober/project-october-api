@@ -40,7 +40,7 @@ object Recommender {
     @throws(classOf[TimeoutException])
     def addUser(userId: Long): Boolean
     /** Informs the backedn that a user has submitted a post
-         * @param user_id, the user that submitted the post
+         * @param user_id, the user that submitted the post (if < 0, this is not submitted by a user)
          * @param post_id, the post the user submitted
          * @param raw_freq, a list of <token, freq> pairs that correspond to the number of times a keyword is in a post.
          */
@@ -87,7 +87,7 @@ object Recommender {
          */
     def addUser(userId: Long): Future[Boolean]
     /** Informs the backedn that a user has submitted a post
-         * @param user_id, the user that submitted the post
+         * @param user_id, the user that submitted the post (if < 0, this is not submitted by a user)
          * @param post_id, the post the user submitted
          * @param raw_freq, a list of <token, freq> pairs that correspond to the number of times a keyword is in a post.
          */
@@ -2786,7 +2786,7 @@ object Recommender {
     }
   
     /** Informs the backedn that a user has submitted a post
-         * @param user_id, the user that submitted the post
+         * @param user_id, the user that submitted the post (if < 0, this is not submitted by a user)
          * @param post_id, the post the user submitted
          * @param raw_freq, a list of <token, freq> pairs that correspond to the number of times a keyword is in a post.
          */
