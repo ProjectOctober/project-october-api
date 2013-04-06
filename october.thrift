@@ -95,7 +95,7 @@ service Recommender {
     bool addUser(1: required i64 user_id) throws (1: EngineException ee, 2: TimeoutException te),
 
     /** Informs the backedn that a user has submitted a post
-     * @param user_id, the user that submitted the post
+     * @param user_id, the user that submitted the post (if < 0, this is not submitted by a user)
      * @param post_id, the post the user submitted
      * @param raw_freq, a list of <token, freq> pairs that correspond to the number of times a keyword is in a post.
      */
