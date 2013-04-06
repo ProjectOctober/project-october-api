@@ -501,7 +501,7 @@ require 'october_types'
 
           FIELDS = {
             USER_ID => {:type => ::Thrift::Types::I64, :name => 'user_id'},
-            LIMIT => {:type => ::Thrift::Types::I64, :name => 'limit'}
+            LIMIT => {:type => ::Thrift::Types::I32, :name => 'limit'}
           }
 
           def struct_fields; FIELDS; end

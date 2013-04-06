@@ -67,7 +67,7 @@ object Recommender {
          * @param limit, the maximum amount of tokens to return 
          */
     @throws(classOf[NotFoundException])
-    def userTopTerms(userId: Long, limit: Long): Map[String, Long]
+    def userTopTerms(userId: Long, limit: Int): Map[String, Long]
     /** Return a list of documents in sorted order of relevance for a search query
          * @param query, a map of tokens to their weight
          */
@@ -108,7 +108,7 @@ object Recommender {
          * @param user_id, the user to query for
          * @param limit, the maximum amount of tokens to return 
          */
-    def userTopTerms(userId: Long, limit: Long): Future[Map[String, Long]]
+    def userTopTerms(userId: Long, limit: Int): Future[Map[String, Long]]
     /** Return a list of documents in sorted order of relevance for a search query
          * @param query, a map of tokens to their weight
          */
@@ -2027,7 +2027,7 @@ object Recommender {
   object UserTopTermsArgs extends ThriftStructCodec[UserTopTermsArgs] {
     val Struct = new TStruct("UserTopTermsArgs")
     val UserIdField = new TField("userId", TType.I64, 1)
-    val LimitField = new TField("limit", TType.I64, 2)
+    val LimitField = new TField("limit", TType.I32, 2)
   
     /**
      * Checks that all required fields are non-null.
@@ -2042,20 +2042,20 @@ object Recommender {
   
     def apply(
       userId: Long,
-      limit: Long
+      limit: Int
     ): UserTopTermsArgs = new Immutable(
       userId,
       limit
     )
   
-    def unapply(_item: UserTopTermsArgs): Option[Product2[Long, Long]] = Some(_item)
+    def unapply(_item: UserTopTermsArgs): Option[Product2[Long, Int]] = Some(_item)
   
     object Immutable extends ThriftStructCodec[UserTopTermsArgs] {
       def encode(_item: UserTopTermsArgs, _oproto: TProtocol) { _item.write(_oproto) }
       def decode(_iprot: TProtocol) = {
         var userId: Long = 0L
         var _got_userId = false
-        var limit: Long = 0L
+        var limit: Int = 0
         var _got_limit = false
         var _done = false
         _iprot.readStructBegin()
@@ -2078,9 +2078,9 @@ object Recommender {
               }
               case 2 => { /* limit */
                 _field.`type` match {
-                  case TType.I64 => {
+                  case TType.I32 => {
                     limit = {
-                      _iprot.readI64()
+                      _iprot.readI32()
                     }
                     _got_limit = true
                   }
@@ -2109,19 +2109,19 @@ object Recommender {
      */
     class Immutable(
       val userId: Long,
-      val limit: Long
+      val limit: Int
     ) extends UserTopTermsArgs
   
   }
   
   trait UserTopTermsArgs extends ThriftStruct
-    with Product2[Long, Long]
+    with Product2[Long, Int]
     with java.io.Serializable
   {
     import UserTopTermsArgs._
   
     def userId: Long
-    def limit: Long
+    def limit: Int
   
     def _1 = userId
     def _2 = limit
@@ -2138,7 +2138,7 @@ object Recommender {
       if (true) {
         val limit_item = limit
         _oprot.writeFieldBegin(LimitField)
-        _oprot.writeI64(limit_item)
+        _oprot.writeI32(limit_item)
         _oprot.writeFieldEnd()
       }
       _oprot.writeFieldStop()
@@ -2147,7 +2147,7 @@ object Recommender {
   
     def copy(
       userId: Long = this.userId, 
-      limit: Long = this.limit
+      limit: Int = this.limit
     ): UserTopTermsArgs = new Immutable(
       userId, 
       limit
@@ -2882,7 +2882,7 @@ object Recommender {
          * @param user_id, the user to query for
          * @param limit, the maximum amount of tokens to return 
          */
-    def userTopTerms(userId: Long, limit: Long): Future[Map[String, Long]] = {
+    def userTopTerms(userId: Long, limit: Int): Future[Map[String, Long]] = {
       __stats_userTopTerms.RequestsCounter.incr()
       this.service(encodeRequest("userTopTerms", UserTopTermsArgs(userId, limit))) flatMap { response =>
         val result = decodeResponse(response, UserTopTermsResult)
