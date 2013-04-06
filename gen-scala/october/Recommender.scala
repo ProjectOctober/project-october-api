@@ -54,14 +54,14 @@ object Recommender {
          * @param post_id, the post that the action is being performed on
          */
     @throws(classOf[NotFoundException])
-    def userVPost(userId: Long, verb: Action, postId: Long): Boolean
+    def userVpost(userId: Long, verb: Action, postId: Long): Boolean
     /** Alert the recommender that a user has actioned a comment
          * @param user_id, the user that performed the action
          * @param verb, the action taken (this is from the Action enum)
          * @param comment_id, the comment that the action is being performed on
          */
     @throws(classOf[NotFoundException])
-    def userVComment(userId: Long, verb: Action, commentId: Long): Boolean
+    def userVcomment(userId: Long, verb: Action, commentId: Long): Boolean
     /** Return the list of top n tokens for a user
          * @param user_id, the user to query for
          * @param limit, the maximum amount of tokens to return 
@@ -97,13 +97,13 @@ object Recommender {
          * @param verb, the action taken (this is from the Action enum)
          * @param post_id, the post that the action is being performed on
          */
-    def userVPost(userId: Long, verb: Action, postId: Long): Future[Boolean]
+    def userVpost(userId: Long, verb: Action, postId: Long): Future[Boolean]
     /** Alert the recommender that a user has actioned a comment
          * @param user_id, the user that performed the action
          * @param verb, the action taken (this is from the Action enum)
          * @param comment_id, the comment that the action is being performed on
          */
-    def userVComment(userId: Long, verb: Action, commentId: Long): Future[Boolean]
+    def userVcomment(userId: Long, verb: Action, commentId: Long): Future[Boolean]
     /** Return the list of top n tokens for a user
          * @param user_id, the user to query for
          * @param limit, the maximum amount of tokens to return 
@@ -1370,8 +1370,8 @@ object Recommender {
     override def productPrefix: String = "AddPostResult"
   }
   
-  object UserVPostArgs extends ThriftStructCodec[UserVPostArgs] {
-    val Struct = new TStruct("UserVPostArgs")
+  object UserVpostArgs extends ThriftStructCodec[UserVpostArgs] {
+    val Struct = new TStruct("UserVpostArgs")
     val UserIdField = new TField("userId", TType.I64, 1)
     val VerbField = new TField("verb", TType.I32, 2)
     val PostIdField = new TField("postId", TType.I64, 3)
@@ -1379,29 +1379,29 @@ object Recommender {
     /**
      * Checks that all required fields are non-null.
      */
-    def validate(_item: UserVPostArgs) {
+    def validate(_item: UserVpostArgs) {
       if (_item.verb == null) throw new TProtocolException("Required field verb cannot be null")
     }
   
-    def encode(_item: UserVPostArgs, _oproto: TProtocol) { _item.write(_oproto) }
+    def encode(_item: UserVpostArgs, _oproto: TProtocol) { _item.write(_oproto) }
     def decode(_iprot: TProtocol) = Immutable.decode(_iprot)
   
-    def apply(_iprot: TProtocol): UserVPostArgs = decode(_iprot)
+    def apply(_iprot: TProtocol): UserVpostArgs = decode(_iprot)
   
     def apply(
       userId: Long,
       verb: Action,
       postId: Long
-    ): UserVPostArgs = new Immutable(
+    ): UserVpostArgs = new Immutable(
       userId,
       verb,
       postId
     )
   
-    def unapply(_item: UserVPostArgs): Option[Product3[Long, Action, Long]] = Some(_item)
+    def unapply(_item: UserVpostArgs): Option[Product3[Long, Action, Long]] = Some(_item)
   
-    object Immutable extends ThriftStructCodec[UserVPostArgs] {
-      def encode(_item: UserVPostArgs, _oproto: TProtocol) { _item.write(_oproto) }
+    object Immutable extends ThriftStructCodec[UserVpostArgs] {
+      def encode(_item: UserVpostArgs, _oproto: TProtocol) { _item.write(_oproto) }
       def decode(_iprot: TProtocol) = {
         var userId: Long = 0L
         var _got_userId = false
@@ -1456,9 +1456,9 @@ object Recommender {
           }
         }
         _iprot.readStructEnd()
-        if (!_got_userId) throw new TProtocolException("Required field 'UserVPostArgs' was not found in serialized data for struct UserVPostArgs")
-        if (!_got_verb) throw new TProtocolException("Required field 'UserVPostArgs' was not found in serialized data for struct UserVPostArgs")
-        if (!_got_postId) throw new TProtocolException("Required field 'UserVPostArgs' was not found in serialized data for struct UserVPostArgs")
+        if (!_got_userId) throw new TProtocolException("Required field 'UserVpostArgs' was not found in serialized data for struct UserVpostArgs")
+        if (!_got_verb) throw new TProtocolException("Required field 'UserVpostArgs' was not found in serialized data for struct UserVpostArgs")
+        if (!_got_postId) throw new TProtocolException("Required field 'UserVpostArgs' was not found in serialized data for struct UserVpostArgs")
         new Immutable(
           userId,
           verb,
@@ -1468,23 +1468,23 @@ object Recommender {
     }
   
     /**
-     * The default read-only implementation of UserVPostArgs.  You typically should not need to
-     * directly reference this class; instead, use the UserVPostArgs.apply method to construct
+     * The default read-only implementation of UserVpostArgs.  You typically should not need to
+     * directly reference this class; instead, use the UserVpostArgs.apply method to construct
      * new instances.
      */
     class Immutable(
       val userId: Long,
       val verb: Action,
       val postId: Long
-    ) extends UserVPostArgs
+    ) extends UserVpostArgs
   
   }
   
-  trait UserVPostArgs extends ThriftStruct
+  trait UserVpostArgs extends ThriftStruct
     with Product3[Long, Action, Long]
     with java.io.Serializable
   {
-    import UserVPostArgs._
+    import UserVpostArgs._
   
     def userId: Long
     def verb: Action
@@ -1495,7 +1495,7 @@ object Recommender {
     def _3 = postId
   
     override def write(_oprot: TProtocol) {
-      UserVPostArgs.validate(this)
+      UserVpostArgs.validate(this)
       _oprot.writeStructBegin(Struct)
       if (true) {
         val userId_item = userId
@@ -1523,13 +1523,13 @@ object Recommender {
       userId: Long = this.userId, 
       verb: Action = this.verb, 
       postId: Long = this.postId
-    ): UserVPostArgs = new Immutable(
+    ): UserVpostArgs = new Immutable(
       userId, 
       verb, 
       postId
     )
   
-    override def canEqual(other: Any): Boolean = other.isInstanceOf[UserVPostArgs]
+    override def canEqual(other: Any): Boolean = other.isInstanceOf[UserVpostArgs]
   
     override def equals(other: Any): Boolean = runtime.ScalaRunTime._equals(this, other)
   
@@ -1547,37 +1547,37 @@ object Recommender {
       case _ => throw new IndexOutOfBoundsException(n.toString)
     }
   
-    override def productPrefix: String = "UserVPostArgs"
+    override def productPrefix: String = "UserVpostArgs"
   }
   
-  object UserVPostResult extends ThriftStructCodec[UserVPostResult] {
-    val Struct = new TStruct("UserVPostResult")
+  object UserVpostResult extends ThriftStructCodec[UserVpostResult] {
+    val Struct = new TStruct("UserVpostResult")
     val SuccessField = new TField("success", TType.BOOL, 0)
     val NfeField = new TField("nfe", TType.STRUCT, 1)
   
     /**
      * Checks that all required fields are non-null.
      */
-    def validate(_item: UserVPostResult) {
+    def validate(_item: UserVpostResult) {
     }
   
-    def encode(_item: UserVPostResult, _oproto: TProtocol) { _item.write(_oproto) }
+    def encode(_item: UserVpostResult, _oproto: TProtocol) { _item.write(_oproto) }
     def decode(_iprot: TProtocol) = Immutable.decode(_iprot)
   
-    def apply(_iprot: TProtocol): UserVPostResult = decode(_iprot)
+    def apply(_iprot: TProtocol): UserVpostResult = decode(_iprot)
   
     def apply(
       success: Option[Boolean] = None,
       nfe: Option[NotFoundException] = None
-    ): UserVPostResult = new Immutable(
+    ): UserVpostResult = new Immutable(
       success,
       nfe
     )
   
-    def unapply(_item: UserVPostResult): Option[Product2[Option[Boolean], Option[NotFoundException]]] = Some(_item)
+    def unapply(_item: UserVpostResult): Option[Product2[Option[Boolean], Option[NotFoundException]]] = Some(_item)
   
-    object Immutable extends ThriftStructCodec[UserVPostResult] {
-      def encode(_item: UserVPostResult, _oproto: TProtocol) { _item.write(_oproto) }
+    object Immutable extends ThriftStructCodec[UserVpostResult] {
+      def encode(_item: UserVpostResult, _oproto: TProtocol) { _item.write(_oproto) }
       def decode(_iprot: TProtocol) = {
         var success: Boolean = false
         var _got_success = false
@@ -1627,22 +1627,22 @@ object Recommender {
     }
   
     /**
-     * The default read-only implementation of UserVPostResult.  You typically should not need to
-     * directly reference this class; instead, use the UserVPostResult.apply method to construct
+     * The default read-only implementation of UserVpostResult.  You typically should not need to
+     * directly reference this class; instead, use the UserVpostResult.apply method to construct
      * new instances.
      */
     class Immutable(
       val success: Option[Boolean] = None,
       val nfe: Option[NotFoundException] = None
-    ) extends UserVPostResult
+    ) extends UserVpostResult
   
   }
   
-  trait UserVPostResult extends ThriftStruct
+  trait UserVpostResult extends ThriftStruct
     with Product2[Option[Boolean], Option[NotFoundException]]
     with java.io.Serializable
   {
-    import UserVPostResult._
+    import UserVpostResult._
   
     def success: Option[Boolean]
     def nfe: Option[NotFoundException]
@@ -1651,7 +1651,7 @@ object Recommender {
     def _2 = nfe
   
     override def write(_oprot: TProtocol) {
-      UserVPostResult.validate(this)
+      UserVpostResult.validate(this)
       _oprot.writeStructBegin(Struct)
       if (success.isDefined) {
         val success_item = success.get
@@ -1672,12 +1672,12 @@ object Recommender {
     def copy(
       success: Option[Boolean] = this.success, 
       nfe: Option[NotFoundException] = this.nfe
-    ): UserVPostResult = new Immutable(
+    ): UserVpostResult = new Immutable(
       success, 
       nfe
     )
   
-    override def canEqual(other: Any): Boolean = other.isInstanceOf[UserVPostResult]
+    override def canEqual(other: Any): Boolean = other.isInstanceOf[UserVpostResult]
   
     override def equals(other: Any): Boolean = runtime.ScalaRunTime._equals(this, other)
   
@@ -1694,11 +1694,11 @@ object Recommender {
       case _ => throw new IndexOutOfBoundsException(n.toString)
     }
   
-    override def productPrefix: String = "UserVPostResult"
+    override def productPrefix: String = "UserVpostResult"
   }
   
-  object UserVCommentArgs extends ThriftStructCodec[UserVCommentArgs] {
-    val Struct = new TStruct("UserVCommentArgs")
+  object UserVcommentArgs extends ThriftStructCodec[UserVcommentArgs] {
+    val Struct = new TStruct("UserVcommentArgs")
     val UserIdField = new TField("userId", TType.I64, 1)
     val VerbField = new TField("verb", TType.I32, 2)
     val CommentIdField = new TField("commentId", TType.I64, 3)
@@ -1706,29 +1706,29 @@ object Recommender {
     /**
      * Checks that all required fields are non-null.
      */
-    def validate(_item: UserVCommentArgs) {
+    def validate(_item: UserVcommentArgs) {
       if (_item.verb == null) throw new TProtocolException("Required field verb cannot be null")
     }
   
-    def encode(_item: UserVCommentArgs, _oproto: TProtocol) { _item.write(_oproto) }
+    def encode(_item: UserVcommentArgs, _oproto: TProtocol) { _item.write(_oproto) }
     def decode(_iprot: TProtocol) = Immutable.decode(_iprot)
   
-    def apply(_iprot: TProtocol): UserVCommentArgs = decode(_iprot)
+    def apply(_iprot: TProtocol): UserVcommentArgs = decode(_iprot)
   
     def apply(
       userId: Long,
       verb: Action,
       commentId: Long
-    ): UserVCommentArgs = new Immutable(
+    ): UserVcommentArgs = new Immutable(
       userId,
       verb,
       commentId
     )
   
-    def unapply(_item: UserVCommentArgs): Option[Product3[Long, Action, Long]] = Some(_item)
+    def unapply(_item: UserVcommentArgs): Option[Product3[Long, Action, Long]] = Some(_item)
   
-    object Immutable extends ThriftStructCodec[UserVCommentArgs] {
-      def encode(_item: UserVCommentArgs, _oproto: TProtocol) { _item.write(_oproto) }
+    object Immutable extends ThriftStructCodec[UserVcommentArgs] {
+      def encode(_item: UserVcommentArgs, _oproto: TProtocol) { _item.write(_oproto) }
       def decode(_iprot: TProtocol) = {
         var userId: Long = 0L
         var _got_userId = false
@@ -1783,9 +1783,9 @@ object Recommender {
           }
         }
         _iprot.readStructEnd()
-        if (!_got_userId) throw new TProtocolException("Required field 'UserVCommentArgs' was not found in serialized data for struct UserVCommentArgs")
-        if (!_got_verb) throw new TProtocolException("Required field 'UserVCommentArgs' was not found in serialized data for struct UserVCommentArgs")
-        if (!_got_commentId) throw new TProtocolException("Required field 'UserVCommentArgs' was not found in serialized data for struct UserVCommentArgs")
+        if (!_got_userId) throw new TProtocolException("Required field 'UserVcommentArgs' was not found in serialized data for struct UserVcommentArgs")
+        if (!_got_verb) throw new TProtocolException("Required field 'UserVcommentArgs' was not found in serialized data for struct UserVcommentArgs")
+        if (!_got_commentId) throw new TProtocolException("Required field 'UserVcommentArgs' was not found in serialized data for struct UserVcommentArgs")
         new Immutable(
           userId,
           verb,
@@ -1795,23 +1795,23 @@ object Recommender {
     }
   
     /**
-     * The default read-only implementation of UserVCommentArgs.  You typically should not need to
-     * directly reference this class; instead, use the UserVCommentArgs.apply method to construct
+     * The default read-only implementation of UserVcommentArgs.  You typically should not need to
+     * directly reference this class; instead, use the UserVcommentArgs.apply method to construct
      * new instances.
      */
     class Immutable(
       val userId: Long,
       val verb: Action,
       val commentId: Long
-    ) extends UserVCommentArgs
+    ) extends UserVcommentArgs
   
   }
   
-  trait UserVCommentArgs extends ThriftStruct
+  trait UserVcommentArgs extends ThriftStruct
     with Product3[Long, Action, Long]
     with java.io.Serializable
   {
-    import UserVCommentArgs._
+    import UserVcommentArgs._
   
     def userId: Long
     def verb: Action
@@ -1822,7 +1822,7 @@ object Recommender {
     def _3 = commentId
   
     override def write(_oprot: TProtocol) {
-      UserVCommentArgs.validate(this)
+      UserVcommentArgs.validate(this)
       _oprot.writeStructBegin(Struct)
       if (true) {
         val userId_item = userId
@@ -1850,13 +1850,13 @@ object Recommender {
       userId: Long = this.userId, 
       verb: Action = this.verb, 
       commentId: Long = this.commentId
-    ): UserVCommentArgs = new Immutable(
+    ): UserVcommentArgs = new Immutable(
       userId, 
       verb, 
       commentId
     )
   
-    override def canEqual(other: Any): Boolean = other.isInstanceOf[UserVCommentArgs]
+    override def canEqual(other: Any): Boolean = other.isInstanceOf[UserVcommentArgs]
   
     override def equals(other: Any): Boolean = runtime.ScalaRunTime._equals(this, other)
   
@@ -1874,37 +1874,37 @@ object Recommender {
       case _ => throw new IndexOutOfBoundsException(n.toString)
     }
   
-    override def productPrefix: String = "UserVCommentArgs"
+    override def productPrefix: String = "UserVcommentArgs"
   }
   
-  object UserVCommentResult extends ThriftStructCodec[UserVCommentResult] {
-    val Struct = new TStruct("UserVCommentResult")
+  object UserVcommentResult extends ThriftStructCodec[UserVcommentResult] {
+    val Struct = new TStruct("UserVcommentResult")
     val SuccessField = new TField("success", TType.BOOL, 0)
     val NfeField = new TField("nfe", TType.STRUCT, 1)
   
     /**
      * Checks that all required fields are non-null.
      */
-    def validate(_item: UserVCommentResult) {
+    def validate(_item: UserVcommentResult) {
     }
   
-    def encode(_item: UserVCommentResult, _oproto: TProtocol) { _item.write(_oproto) }
+    def encode(_item: UserVcommentResult, _oproto: TProtocol) { _item.write(_oproto) }
     def decode(_iprot: TProtocol) = Immutable.decode(_iprot)
   
-    def apply(_iprot: TProtocol): UserVCommentResult = decode(_iprot)
+    def apply(_iprot: TProtocol): UserVcommentResult = decode(_iprot)
   
     def apply(
       success: Option[Boolean] = None,
       nfe: Option[NotFoundException] = None
-    ): UserVCommentResult = new Immutable(
+    ): UserVcommentResult = new Immutable(
       success,
       nfe
     )
   
-    def unapply(_item: UserVCommentResult): Option[Product2[Option[Boolean], Option[NotFoundException]]] = Some(_item)
+    def unapply(_item: UserVcommentResult): Option[Product2[Option[Boolean], Option[NotFoundException]]] = Some(_item)
   
-    object Immutable extends ThriftStructCodec[UserVCommentResult] {
-      def encode(_item: UserVCommentResult, _oproto: TProtocol) { _item.write(_oproto) }
+    object Immutable extends ThriftStructCodec[UserVcommentResult] {
+      def encode(_item: UserVcommentResult, _oproto: TProtocol) { _item.write(_oproto) }
       def decode(_iprot: TProtocol) = {
         var success: Boolean = false
         var _got_success = false
@@ -1954,22 +1954,22 @@ object Recommender {
     }
   
     /**
-     * The default read-only implementation of UserVCommentResult.  You typically should not need to
-     * directly reference this class; instead, use the UserVCommentResult.apply method to construct
+     * The default read-only implementation of UserVcommentResult.  You typically should not need to
+     * directly reference this class; instead, use the UserVcommentResult.apply method to construct
      * new instances.
      */
     class Immutable(
       val success: Option[Boolean] = None,
       val nfe: Option[NotFoundException] = None
-    ) extends UserVCommentResult
+    ) extends UserVcommentResult
   
   }
   
-  trait UserVCommentResult extends ThriftStruct
+  trait UserVcommentResult extends ThriftStruct
     with Product2[Option[Boolean], Option[NotFoundException]]
     with java.io.Serializable
   {
-    import UserVCommentResult._
+    import UserVcommentResult._
   
     def success: Option[Boolean]
     def nfe: Option[NotFoundException]
@@ -1978,7 +1978,7 @@ object Recommender {
     def _2 = nfe
   
     override def write(_oprot: TProtocol) {
-      UserVCommentResult.validate(this)
+      UserVcommentResult.validate(this)
       _oprot.writeStructBegin(Struct)
       if (success.isDefined) {
         val success_item = success.get
@@ -1999,12 +1999,12 @@ object Recommender {
     def copy(
       success: Option[Boolean] = this.success, 
       nfe: Option[NotFoundException] = this.nfe
-    ): UserVCommentResult = new Immutable(
+    ): UserVcommentResult = new Immutable(
       success, 
       nfe
     )
   
-    override def canEqual(other: Any): Boolean = other.isInstanceOf[UserVCommentResult]
+    override def canEqual(other: Any): Boolean = other.isInstanceOf[UserVcommentResult]
   
     override def equals(other: Any): Boolean = runtime.ScalaRunTime._equals(this, other)
   
@@ -2021,7 +2021,7 @@ object Recommender {
       case _ => throw new IndexOutOfBoundsException(n.toString)
     }
   
-    override def productPrefix: String = "UserVCommentResult"
+    override def productPrefix: String = "UserVcommentResult"
   }
   
   object UserTopTermsArgs extends ThriftStructCodec[UserTopTermsArgs] {
@@ -2809,11 +2809,11 @@ object Recommender {
         __stats_addPost.FailuresScope.counter(ex.getClass.getName).incr()
       }
     }
-    private[this] object __stats_userVPost {
-      val RequestsCounter = scopedStats.scope("userVPost").counter("requests")
-      val SuccessCounter = scopedStats.scope("userVPost").counter("success")
-      val FailuresCounter = scopedStats.scope("userVPost").counter("failures")
-      val FailuresScope = scopedStats.scope("userVPost").scope("failures")
+    private[this] object __stats_userVpost {
+      val RequestsCounter = scopedStats.scope("userVpost").counter("requests")
+      val SuccessCounter = scopedStats.scope("userVpost").counter("success")
+      val FailuresCounter = scopedStats.scope("userVpost").counter("failures")
+      val FailuresScope = scopedStats.scope("userVpost").scope("failures")
     }
   
     /** Alert the recommender that a user has actioned a post
@@ -2821,30 +2821,30 @@ object Recommender {
          * @param verb, the action taken (this is from the Action enum)
          * @param post_id, the post that the action is being performed on
          */
-    def userVPost(userId: Long, verb: Action, postId: Long): Future[Boolean] = {
-      __stats_userVPost.RequestsCounter.incr()
-      this.service(encodeRequest("userVPost", UserVPostArgs(userId, verb, postId))) flatMap { response =>
-        val result = decodeResponse(response, UserVPostResult)
+    def userVpost(userId: Long, verb: Action, postId: Long): Future[Boolean] = {
+      __stats_userVpost.RequestsCounter.incr()
+      this.service(encodeRequest("userVpost", UserVpostArgs(userId, verb, postId))) flatMap { response =>
+        val result = decodeResponse(response, UserVpostResult)
         val exception =
           (result.nfe).map(Future.exception)
-        exception.orElse(result.success.map(Future.value)).getOrElse(Future.exception(missingResult("userVPost")))
+        exception.orElse(result.success.map(Future.value)).getOrElse(Future.exception(missingResult("userVpost")))
       } rescue {
         case ex: SourcedException => {
           if (this.serviceName != "") { ex.serviceName = this.serviceName }
           Future.exception(ex)
         }
       } onSuccess { _ =>
-        __stats_userVPost.SuccessCounter.incr()
+        __stats_userVpost.SuccessCounter.incr()
       } onFailure { ex =>
-        __stats_userVPost.FailuresCounter.incr()
-        __stats_userVPost.FailuresScope.counter(ex.getClass.getName).incr()
+        __stats_userVpost.FailuresCounter.incr()
+        __stats_userVpost.FailuresScope.counter(ex.getClass.getName).incr()
       }
     }
-    private[this] object __stats_userVComment {
-      val RequestsCounter = scopedStats.scope("userVComment").counter("requests")
-      val SuccessCounter = scopedStats.scope("userVComment").counter("success")
-      val FailuresCounter = scopedStats.scope("userVComment").counter("failures")
-      val FailuresScope = scopedStats.scope("userVComment").scope("failures")
+    private[this] object __stats_userVcomment {
+      val RequestsCounter = scopedStats.scope("userVcomment").counter("requests")
+      val SuccessCounter = scopedStats.scope("userVcomment").counter("success")
+      val FailuresCounter = scopedStats.scope("userVcomment").counter("failures")
+      val FailuresScope = scopedStats.scope("userVcomment").scope("failures")
     }
   
     /** Alert the recommender that a user has actioned a comment
@@ -2852,23 +2852,23 @@ object Recommender {
          * @param verb, the action taken (this is from the Action enum)
          * @param comment_id, the comment that the action is being performed on
          */
-    def userVComment(userId: Long, verb: Action, commentId: Long): Future[Boolean] = {
-      __stats_userVComment.RequestsCounter.incr()
-      this.service(encodeRequest("userVComment", UserVCommentArgs(userId, verb, commentId))) flatMap { response =>
-        val result = decodeResponse(response, UserVCommentResult)
+    def userVcomment(userId: Long, verb: Action, commentId: Long): Future[Boolean] = {
+      __stats_userVcomment.RequestsCounter.incr()
+      this.service(encodeRequest("userVcomment", UserVcommentArgs(userId, verb, commentId))) flatMap { response =>
+        val result = decodeResponse(response, UserVcommentResult)
         val exception =
           (result.nfe).map(Future.exception)
-        exception.orElse(result.success.map(Future.value)).getOrElse(Future.exception(missingResult("userVComment")))
+        exception.orElse(result.success.map(Future.value)).getOrElse(Future.exception(missingResult("userVcomment")))
       } rescue {
         case ex: SourcedException => {
           if (this.serviceName != "") { ex.serviceName = this.serviceName }
           Future.exception(ex)
         }
       } onSuccess { _ =>
-        __stats_userVComment.SuccessCounter.incr()
+        __stats_userVcomment.SuccessCounter.incr()
       } onFailure { ex =>
-        __stats_userVComment.FailuresCounter.incr()
-        __stats_userVComment.FailuresScope.counter(ex.getClass.getName).incr()
+        __stats_userVcomment.FailuresCounter.incr()
+        __stats_userVcomment.FailuresScope.counter(ex.getClass.getName).incr()
       }
     }
     private[this] object __stats_userTopTerms {
@@ -3104,50 +3104,50 @@ object Recommender {
         case e: Exception => Future.exception(e)
       }
     })
-    addFunction("userVPost", { (iprot: TProtocol, seqid: Int) =>
+    addFunction("userVpost", { (iprot: TProtocol, seqid: Int) =>
       try {
-        val args = UserVPostArgs.decode(iprot)
+        val args = UserVpostArgs.decode(iprot)
         iprot.readMessageEnd()
         (try {
-          iface.userVPost(args.userId, args.verb, args.postId)
+          iface.userVpost(args.userId, args.verb, args.postId)
         } catch {
           case e: Exception => Future.exception(e)
         }) flatMap { value: Boolean =>
-          reply("userVPost", seqid, UserVPostResult(success = Some(value)))
+          reply("userVpost", seqid, UserVpostResult(success = Some(value)))
         } rescue {
           case e: NotFoundException => {
-            reply("userVPost", seqid, UserVPostResult(nfe = Some(e)))
+            reply("userVpost", seqid, UserVpostResult(nfe = Some(e)))
           }
           case e => Future.exception(e)
         }
       } catch {
         case e: TProtocolException => {
           iprot.readMessageEnd()
-          exception("userVPost", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
+          exception("userVpost", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
         }
         case e: Exception => Future.exception(e)
       }
     })
-    addFunction("userVComment", { (iprot: TProtocol, seqid: Int) =>
+    addFunction("userVcomment", { (iprot: TProtocol, seqid: Int) =>
       try {
-        val args = UserVCommentArgs.decode(iprot)
+        val args = UserVcommentArgs.decode(iprot)
         iprot.readMessageEnd()
         (try {
-          iface.userVComment(args.userId, args.verb, args.commentId)
+          iface.userVcomment(args.userId, args.verb, args.commentId)
         } catch {
           case e: Exception => Future.exception(e)
         }) flatMap { value: Boolean =>
-          reply("userVComment", seqid, UserVCommentResult(success = Some(value)))
+          reply("userVcomment", seqid, UserVcommentResult(success = Some(value)))
         } rescue {
           case e: NotFoundException => {
-            reply("userVComment", seqid, UserVCommentResult(nfe = Some(e)))
+            reply("userVcomment", seqid, UserVcommentResult(nfe = Some(e)))
           }
           case e => Future.exception(e)
         }
       } catch {
         case e: TProtocolException => {
           iprot.readMessageEnd()
-          exception("userVComment", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
+          exception("userVcomment", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
         }
         case e: Exception => Future.exception(e)
       }

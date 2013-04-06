@@ -81,68 +81,68 @@ require 'october_types'
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'addPost failed: unknown result')
           end
 
-          def user_v_post(user_id, verb, post_id)
-            send_user_v_post(user_id, verb, post_id)
-            return recv_user_v_post()
+          def userVPost(user_id, verb, post_id)
+            send_userVPost(user_id, verb, post_id)
+            return recv_userVPost()
           end
 
-          def send_user_v_post(user_id, verb, post_id)
-            send_message('user_v_post', User_v_post_args, :user_id => user_id, :verb => verb, :post_id => post_id)
+          def send_userVPost(user_id, verb, post_id)
+            send_message('userVPost', UserVPost_args, :user_id => user_id, :verb => verb, :post_id => post_id)
           end
 
-          def recv_user_v_post()
-            result = receive_message(User_v_post_result)
+          def recv_userVPost()
+            result = receive_message(UserVPost_result)
             return result.success unless result.success.nil?
             raise result.nfe unless result.nfe.nil?
-            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'user_v_post failed: unknown result')
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'userVPost failed: unknown result')
           end
 
-          def user_v_comment(user_id, verb, comment_id)
-            send_user_v_comment(user_id, verb, comment_id)
-            return recv_user_v_comment()
+          def userVComment(user_id, verb, comment_id)
+            send_userVComment(user_id, verb, comment_id)
+            return recv_userVComment()
           end
 
-          def send_user_v_comment(user_id, verb, comment_id)
-            send_message('user_v_comment', User_v_comment_args, :user_id => user_id, :verb => verb, :comment_id => comment_id)
+          def send_userVComment(user_id, verb, comment_id)
+            send_message('userVComment', UserVComment_args, :user_id => user_id, :verb => verb, :comment_id => comment_id)
           end
 
-          def recv_user_v_comment()
-            result = receive_message(User_v_comment_result)
+          def recv_userVComment()
+            result = receive_message(UserVComment_result)
             return result.success unless result.success.nil?
             raise result.nfe unless result.nfe.nil?
-            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'user_v_comment failed: unknown result')
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'userVComment failed: unknown result')
           end
 
-          def user_top_terms(user_id, limit)
-            send_user_top_terms(user_id, limit)
-            return recv_user_top_terms()
+          def userTopTerms(user_id, limit)
+            send_userTopTerms(user_id, limit)
+            return recv_userTopTerms()
           end
 
-          def send_user_top_terms(user_id, limit)
-            send_message('user_top_terms', User_top_terms_args, :user_id => user_id, :limit => limit)
+          def send_userTopTerms(user_id, limit)
+            send_message('userTopTerms', UserTopTerms_args, :user_id => user_id, :limit => limit)
           end
 
-          def recv_user_top_terms()
-            result = receive_message(User_top_terms_result)
+          def recv_userTopTerms()
+            result = receive_message(UserTopTerms_result)
             return result.success unless result.success.nil?
             raise result.nfe unless result.nfe.nil?
-            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'user_top_terms failed: unknown result')
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'userTopTerms failed: unknown result')
           end
 
-          def text_search(tokens)
-            send_text_search(tokens)
-            return recv_text_search()
+          def textSearch(tokens)
+            send_textSearch(tokens)
+            return recv_textSearch()
           end
 
-          def send_text_search(tokens)
-            send_message('text_search', Text_search_args, :tokens => tokens)
+          def send_textSearch(tokens)
+            send_message('textSearch', TextSearch_args, :tokens => tokens)
           end
 
-          def recv_text_search()
-            result = receive_message(Text_search_result)
+          def recv_textSearch()
+            result = receive_message(TextSearch_result)
             return result.success unless result.success.nil?
             raise result.ee unless result.ee.nil?
-            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'text_search failed: unknown result')
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'textSearch failed: unknown result')
           end
 
         end
@@ -204,48 +204,48 @@ require 'october_types'
             write_result(result, oprot, 'addPost', seqid)
           end
 
-          def process_user_v_post(seqid, iprot, oprot)
-            args = read_args(iprot, User_v_post_args)
-            result = User_v_post_result.new()
+          def process_userVPost(seqid, iprot, oprot)
+            args = read_args(iprot, UserVPost_args)
+            result = UserVPost_result.new()
             begin
-              result.success = @handler.user_v_post(args.user_id, args.verb, args.post_id)
+              result.success = @handler.userVPost(args.user_id, args.verb, args.post_id)
             rescue Backend::NotFoundException => nfe
               result.nfe = nfe
             end
-            write_result(result, oprot, 'user_v_post', seqid)
+            write_result(result, oprot, 'userVPost', seqid)
           end
 
-          def process_user_v_comment(seqid, iprot, oprot)
-            args = read_args(iprot, User_v_comment_args)
-            result = User_v_comment_result.new()
+          def process_userVComment(seqid, iprot, oprot)
+            args = read_args(iprot, UserVComment_args)
+            result = UserVComment_result.new()
             begin
-              result.success = @handler.user_v_comment(args.user_id, args.verb, args.comment_id)
+              result.success = @handler.userVComment(args.user_id, args.verb, args.comment_id)
             rescue Backend::NotFoundException => nfe
               result.nfe = nfe
             end
-            write_result(result, oprot, 'user_v_comment', seqid)
+            write_result(result, oprot, 'userVComment', seqid)
           end
 
-          def process_user_top_terms(seqid, iprot, oprot)
-            args = read_args(iprot, User_top_terms_args)
-            result = User_top_terms_result.new()
+          def process_userTopTerms(seqid, iprot, oprot)
+            args = read_args(iprot, UserTopTerms_args)
+            result = UserTopTerms_result.new()
             begin
-              result.success = @handler.user_top_terms(args.user_id, args.limit)
+              result.success = @handler.userTopTerms(args.user_id, args.limit)
             rescue Backend::NotFoundException => nfe
               result.nfe = nfe
             end
-            write_result(result, oprot, 'user_top_terms', seqid)
+            write_result(result, oprot, 'userTopTerms', seqid)
           end
 
-          def process_text_search(seqid, iprot, oprot)
-            args = read_args(iprot, Text_search_args)
-            result = Text_search_result.new()
+          def process_textSearch(seqid, iprot, oprot)
+            args = read_args(iprot, TextSearch_args)
+            result = TextSearch_result.new()
             begin
-              result.success = @handler.text_search(args.tokens)
+              result.success = @handler.textSearch(args.tokens)
             rescue Backend::EngineException => ee
               result.ee = ee
             end
-            write_result(result, oprot, 'text_search', seqid)
+            write_result(result, oprot, 'textSearch', seqid)
           end
 
         end
@@ -406,7 +406,7 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class User_v_post_args
+        class UserVPost_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           USER_ID = 1
           VERB = 2
@@ -432,7 +432,7 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class User_v_post_result
+        class UserVPost_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           SUCCESS = 0
           NFE = 1
@@ -450,7 +450,7 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class User_v_comment_args
+        class UserVComment_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           USER_ID = 1
           VERB = 2
@@ -476,7 +476,7 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class User_v_comment_result
+        class UserVComment_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           SUCCESS = 0
           NFE = 1
@@ -494,7 +494,7 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class User_top_terms_args
+        class UserTopTerms_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           USER_ID = 1
           LIMIT = 2
@@ -514,7 +514,7 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class User_top_terms_result
+        class UserTopTerms_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           SUCCESS = 0
           NFE = 1
@@ -532,7 +532,7 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class Text_search_args
+        class TextSearch_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           TOKENS = 1
 
@@ -549,7 +549,7 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class Text_search_result
+        class TextSearch_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           SUCCESS = 0
           EE = 1
