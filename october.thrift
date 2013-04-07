@@ -136,7 +136,7 @@ service Recommender {
     /** Return a list of documents in sorted order of relevance for a search query
      * @param query, a map of tokens to their weight
      */
-    map<i64, double> textSearch(1: required list<string> tokens) throws (1: EngineException ee),
+    map<i64, double> textSearch(1: required list<string> tokens, 2: required i32 limit) throws (1: EngineException ee),
 
     /** Add some terms to a user that they are interested in
      * @param user_id, the user to add to

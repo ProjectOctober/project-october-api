@@ -80,7 +80,7 @@ object Recommender {
          * @param query, a map of tokens to their weight
          */
     @throws(classOf[EngineException])
-    def textSearch(tokens: Seq[String] = Seq[String]()): Map[Long, Double]
+    def textSearch(tokens: Seq[String] = Seq[String](), limit: Int): Map[Long, Double]
     /** Add some terms to a user that they are interested in
          * @param user_id, the user to add to
          * @param terms, the terms to add to the user
@@ -133,7 +133,7 @@ object Recommender {
     /** Return a list of documents in sorted order of relevance for a search query
          * @param query, a map of tokens to their weight
          */
-    def textSearch(tokens: Seq[String] = Seq[String]()): Future[Map[Long, Double]]
+    def textSearch(tokens: Seq[String] = Seq[String](), limit: Int): Future[Map[Long, Double]]
     /** Add some terms to a user that they are interested in
          * @param user_id, the user to add to
          * @param terms, the terms to add to the user
@@ -2727,6 +2727,7 @@ object Recommender {
   object TextSearchArgs extends ThriftStructCodec[TextSearchArgs] {
     val Struct = new TStruct("TextSearchArgs")
     val TokensField = new TField("tokens", TType.LIST, 1)
+    val LimitField = new TField("limit", TType.I32, 2)
   
     /**
      * Checks that all required fields are non-null.
@@ -2741,18 +2742,22 @@ object Recommender {
     def apply(_iprot: TProtocol): TextSearchArgs = decode(_iprot)
   
     def apply(
-      tokens: Seq[String] = Seq[String]()
+      tokens: Seq[String] = Seq[String](),
+      limit: Int
     ): TextSearchArgs = new Immutable(
-      tokens
+      tokens,
+      limit
     )
   
-    def unapply(_item: TextSearchArgs): Option[Seq[String]] = Some(_item.tokens)
+    def unapply(_item: TextSearchArgs): Option[Product2[Seq[String], Int]] = Some(_item)
   
     object Immutable extends ThriftStructCodec[TextSearchArgs] {
       def encode(_item: TextSearchArgs, _oproto: TProtocol) { _item.write(_oproto) }
       def decode(_iprot: TProtocol) = {
         var tokens: Seq[String] = Seq[String]()
         var _got_tokens = false
+        var limit: Int = 0
+        var _got_limit = false
         var _done = false
         _iprot.readStructBegin()
         while (!_done) {
@@ -2782,6 +2787,17 @@ object Recommender {
                   case _ => TProtocolUtil.skip(_iprot, _field.`type`)
                 }
               }
+              case 2 => { /* limit */
+                _field.`type` match {
+                  case TType.I32 => {
+                    limit = {
+                      _iprot.readI32()
+                    }
+                    _got_limit = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
               case _ => TProtocolUtil.skip(_iprot, _field.`type`)
             }
             _iprot.readFieldEnd()
@@ -2789,8 +2805,10 @@ object Recommender {
         }
         _iprot.readStructEnd()
         if (!_got_tokens) throw new TProtocolException("Required field 'TextSearchArgs' was not found in serialized data for struct TextSearchArgs")
+        if (!_got_limit) throw new TProtocolException("Required field 'TextSearchArgs' was not found in serialized data for struct TextSearchArgs")
         new Immutable(
-          tokens
+          tokens,
+          limit
         )
       }
     }
@@ -2801,20 +2819,23 @@ object Recommender {
      * new instances.
      */
     class Immutable(
-      val tokens: Seq[String] = Seq[String]()
+      val tokens: Seq[String] = Seq[String](),
+      val limit: Int
     ) extends TextSearchArgs
   
   }
   
   trait TextSearchArgs extends ThriftStruct
-    with Product1[Seq[String]]
+    with Product2[Seq[String], Int]
     with java.io.Serializable
   {
     import TextSearchArgs._
   
     def tokens: Seq[String]
+    def limit: Int
   
     def _1 = tokens
+    def _2 = limit
   
     override def write(_oprot: TProtocol) {
       TextSearchArgs.validate(this)
@@ -2829,14 +2850,22 @@ object Recommender {
         _oprot.writeListEnd()
         _oprot.writeFieldEnd()
       }
+      if (true) {
+        val limit_item = limit
+        _oprot.writeFieldBegin(LimitField)
+        _oprot.writeI32(limit_item)
+        _oprot.writeFieldEnd()
+      }
       _oprot.writeFieldStop()
       _oprot.writeStructEnd()
     }
   
     def copy(
-      tokens: Seq[String] = this.tokens
+      tokens: Seq[String] = this.tokens, 
+      limit: Int = this.limit
     ): TextSearchArgs = new Immutable(
-      tokens
+      tokens, 
+      limit
     )
   
     override def canEqual(other: Any): Boolean = other.isInstanceOf[TextSearchArgs]
@@ -2848,10 +2877,11 @@ object Recommender {
     override def toString: String = runtime.ScalaRunTime._toString(this)
   
   
-    override def productArity: Int = 1
+    override def productArity: Int = 2
   
     override def productElement(n: Int): Any = n match {
       case 0 => tokens
+      case 1 => limit
       case _ => throw new IndexOutOfBoundsException(n.toString)
     }
   
@@ -3637,9 +3667,9 @@ object Recommender {
     /** Return a list of documents in sorted order of relevance for a search query
          * @param query, a map of tokens to their weight
          */
-    def textSearch(tokens: Seq[String] = Seq[String]()): Future[Map[Long, Double]] = {
+    def textSearch(tokens: Seq[String] = Seq[String](), limit: Int): Future[Map[Long, Double]] = {
       __stats_textSearch.RequestsCounter.incr()
-      this.service(encodeRequest("textSearch", TextSearchArgs(tokens))) flatMap { response =>
+      this.service(encodeRequest("textSearch", TextSearchArgs(tokens, limit))) flatMap { response =>
         val result = decodeResponse(response, TextSearchResult)
         val exception =
           (result.ee).map(Future.exception)
@@ -3961,7 +3991,7 @@ object Recommender {
         val args = TextSearchArgs.decode(iprot)
         iprot.readMessageEnd()
         (try {
-          iface.textSearch(args.tokens)
+          iface.textSearch(args.tokens, args.limit)
         } catch {
           case e: Exception => Future.exception(e)
         }) flatMap { value: Map[Long, Double] =>

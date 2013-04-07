@@ -145,13 +145,13 @@ require 'october_types'
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'userTopTerms failed: unknown result')
           end
 
-          def textSearch(tokens)
-            send_textSearch(tokens)
+          def textSearch(tokens, limit)
+            send_textSearch(tokens, limit)
             return recv_textSearch()
           end
 
-          def send_textSearch(tokens)
-            send_message('textSearch', TextSearch_args, :tokens => tokens)
+          def send_textSearch(tokens, limit)
+            send_message('textSearch', TextSearch_args, :tokens => tokens, :limit => limit)
           end
 
           def recv_textSearch()
@@ -284,7 +284,7 @@ require 'october_types'
             args = read_args(iprot, TextSearch_args)
             result = TextSearch_result.new()
             begin
-              result.success = @handler.textSearch(args.tokens)
+              result.success = @handler.textSearch(args.tokens, args.limit)
             rescue Backend::EngineException => ee
               result.ee = ee
             end
@@ -636,15 +636,18 @@ require 'october_types'
         class TextSearch_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           TOKENS = 1
+          LIMIT = 2
 
           FIELDS = {
-            TOKENS => {:type => ::Thrift::Types::LIST, :name => 'tokens', :element => {:type => ::Thrift::Types::STRING}}
+            TOKENS => {:type => ::Thrift::Types::LIST, :name => 'tokens', :element => {:type => ::Thrift::Types::STRING}},
+            LIMIT => {:type => ::Thrift::Types::I32, :name => 'limit'}
           }
 
           def struct_fields; FIELDS; end
 
           def validate
             raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tokens is unset!') unless @tokens
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field limit is unset!') unless @limit
           end
 
           ::Thrift::Struct.generate_accessors self
