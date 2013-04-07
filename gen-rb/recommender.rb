@@ -113,6 +113,22 @@ require 'october_types'
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'userVComment failed: unknown result')
           end
 
+          def userVUser(actioner_id, verb, actionee_id)
+            send_userVUser(actioner_id, verb, actionee_id)
+            return recv_userVUser()
+          end
+
+          def send_userVUser(actioner_id, verb, actionee_id)
+            send_message('userVUser', UserVUser_args, :actioner_id => actioner_id, :verb => verb, :actionee_id => actionee_id)
+          end
+
+          def recv_userVUser()
+            result = receive_message(UserVUser_result)
+            return result.success unless result.success.nil?
+            raise result.nfe unless result.nfe.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'userVUser failed: unknown result')
+          end
+
           def userTopTerms(user_id, limit)
             send_userTopTerms(user_id, limit)
             return recv_userTopTerms()
@@ -143,6 +159,22 @@ require 'october_types'
             return result.success unless result.success.nil?
             raise result.ee unless result.ee.nil?
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'textSearch failed: unknown result')
+          end
+
+          def addUserTerms(user_id, terms)
+            send_addUserTerms(user_id, terms)
+            return recv_addUserTerms()
+          end
+
+          def send_addUserTerms(user_id, terms)
+            send_message('addUserTerms', AddUserTerms_args, :user_id => user_id, :terms => terms)
+          end
+
+          def recv_addUserTerms()
+            result = receive_message(AddUserTerms_result)
+            return result.success unless result.success.nil?
+            raise result.nfe unless result.nfe.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'addUserTerms failed: unknown result')
           end
 
         end
@@ -226,6 +258,17 @@ require 'october_types'
             write_result(result, oprot, 'userVComment', seqid)
           end
 
+          def process_userVUser(seqid, iprot, oprot)
+            args = read_args(iprot, UserVUser_args)
+            result = UserVUser_result.new()
+            begin
+              result.success = @handler.userVUser(args.actioner_id, args.verb, args.actionee_id)
+            rescue Backend::NotFoundException => nfe
+              result.nfe = nfe
+            end
+            write_result(result, oprot, 'userVUser', seqid)
+          end
+
           def process_userTopTerms(seqid, iprot, oprot)
             args = read_args(iprot, UserTopTerms_args)
             result = UserTopTerms_result.new()
@@ -246,6 +289,17 @@ require 'october_types'
               result.ee = ee
             end
             write_result(result, oprot, 'textSearch', seqid)
+          end
+
+          def process_addUserTerms(seqid, iprot, oprot)
+            args = read_args(iprot, AddUserTerms_args)
+            result = AddUserTerms_result.new()
+            begin
+              result.success = @handler.addUserTerms(args.user_id, args.terms)
+            rescue Backend::NotFoundException => nfe
+              result.nfe = nfe
+            end
+            write_result(result, oprot, 'addUserTerms', seqid)
           end
 
         end
@@ -494,6 +548,50 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
+        class UserVUser_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          ACTIONER_ID = 1
+          VERB = 2
+          ACTIONEE_ID = 3
+
+          FIELDS = {
+            ACTIONER_ID => {:type => ::Thrift::Types::I64, :name => 'actioner_id'},
+            VERB => {:type => ::Thrift::Types::I32, :name => 'verb', :enum_class => Backend::Action},
+            ACTIONEE_ID => {:type => ::Thrift::Types::I64, :name => 'actionee_id'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field actioner_id is unset!') unless @actioner_id
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field verb is unset!') unless @verb
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field actionee_id is unset!') unless @actionee_id
+            unless @verb.nil? || Backend::Action::VALID_VALUES.include?(@verb)
+              raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field verb!')
+            end
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class UserVUser_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          NFE = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+            NFE => {:type => ::Thrift::Types::STRUCT, :name => 'nfe', :class => Backend::NotFoundException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
         class UserTopTerms_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           USER_ID = 1
@@ -557,6 +655,44 @@ require 'october_types'
           FIELDS = {
             SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::DOUBLE}},
             EE => {:type => ::Thrift::Types::STRUCT, :name => 'ee', :class => Backend::EngineException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class AddUserTerms_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          USER_ID = 1
+          TERMS = 2
+
+          FIELDS = {
+            USER_ID => {:type => ::Thrift::Types::I64, :name => 'user_id'},
+            TERMS => {:type => ::Thrift::Types::LIST, :name => 'terms', :element => {:type => ::Thrift::Types::STRING}}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user_id is unset!') unless @user_id
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field terms is unset!') unless @terms
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class AddUserTerms_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          NFE = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+            NFE => {:type => ::Thrift::Types::STRUCT, :name => 'nfe', :class => Backend::NotFoundException}
           }
 
           def struct_fields; FIELDS; end

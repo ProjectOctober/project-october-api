@@ -56,7 +56,8 @@ enum Action {
     POST,
     COMMENT,
     REPORT,
-    TAG
+    TAG,
+    FOLLOW,
 }
 
 #
@@ -118,6 +119,13 @@ service Recommender {
      */
     bool userVComment(1: required i64 user_id, 2: required Action verb, 3: required i64 comment_id) throws (1: NotFoundException nfe),
 
+    /** Alert the recommender that a user has actioned a user
+     * @param actioner_id, the user that performed the action
+     * @param verb, the action taken (this is from the Action enum)
+     * @param actionee_id, the user that the action is being performed on
+     */
+    bool userVUser(1: required i64 actioner_id, 2: required Action verb, 3: required i64 actionee_id) throws (1: NotFoundException nfe),
+
     /** Return the list of top n tokens for a user
      * @param user_id, the user to query for
      * @param limit, the maximum amount of tokens to return 
@@ -128,4 +136,10 @@ service Recommender {
      * @param query, a map of tokens to their weight
      */
     map<i64, double> textSearch(1: required list<string> tokens) throws (1: EngineException ee),
+
+    /** Add some terms to a user that they are interested in
+     * @param user_id, the user to add to
+     * @param terms, the terms to add to the user
+     */
+    bool addUserTerms(1: required i64 user_id, 2: required list<string> terms) throws (1: NotFoundException nfe),
 }

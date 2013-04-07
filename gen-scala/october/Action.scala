@@ -43,6 +43,10 @@ case object Action {
     val value = 8
     val name = "Tag"
   }
+  case object Follow extends Action {
+    val value = 9
+    val name = "Follow"
+  }
 
   /**
    * Find the enum by its integer value, as defined in the Thrift IDL.
@@ -59,6 +63,7 @@ case object Action {
       case 6 => Comment
       case 7 => Report
       case 8 => Tag
+      case 9 => Follow
       case _ => throw new NoSuchElementException(value.toString)
     }
   }
@@ -78,6 +83,7 @@ case object Action {
       case 6 => scala.Some(Comment)
       case 7 => scala.Some(Report)
       case 8 => scala.Some(Tag)
+      case 9 => scala.Some(Follow)
       case _ => scala.None
     }
   }
@@ -93,6 +99,7 @@ case object Action {
       case "comment" => scala.Some(Action.Comment)
       case "report" => scala.Some(Action.Report)
       case "tag" => scala.Some(Action.Tag)
+      case "follow" => scala.Some(Action.Follow)
       case _ => scala.None
     }
   }
