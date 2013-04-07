@@ -6,7 +6,7 @@ namespace java october
 namespace rb Backend
 
 # See the Semantic Versioning Specification (SemVer) http://semver.org.
-const string VERSION = "0.2.0"
+const string VERSION = "0.8.0"
 
 #
 # Structs
@@ -88,8 +88,9 @@ service Recommender {
 
     /** Request a list of posts that are most appropriate for a user
      * @param user_id, the user that the posts are being requested for
+     * @param limit,  the maximum number of posts to return
      */
-    PostList recPosts(1: required i64 user_id) throws (1: NotFoundException nfe, 2: EngineException ee, 3: TimeoutException te),
+    PostList recPosts(1: required i64 user_id, 2: required i32 limit) throws (1: NotFoundException nfe, 2: EngineException ee, 3: TimeoutException te),
 
     /** Informs the backend that a new user has been created
      * @param user_id, the user that is being added

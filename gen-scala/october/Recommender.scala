@@ -28,11 +28,12 @@ object Recommender {
     def ping(): String
     /** Request a list of posts that are most appropriate for a user
          * @param user_id, the user that the posts are being requested for
+         * @param limit,  the maximum number of posts to return
          */
     @throws(classOf[NotFoundException])
     @throws(classOf[EngineException])
     @throws(classOf[TimeoutException])
-    def recPosts(userId: Long): PostList
+    def recPosts(userId: Long, limit: Int): PostList
     /** Informs the backend that a new user has been created
          * @param user_id, the user that is being added
          */
@@ -93,8 +94,9 @@ object Recommender {
     def ping(): Future[String]
     /** Request a list of posts that are most appropriate for a user
          * @param user_id, the user that the posts are being requested for
+         * @param limit,  the maximum number of posts to return
          */
-    def recPosts(userId: Long): Future[PostList]
+    def recPosts(userId: Long, limit: Int): Future[PostList]
     /** Informs the backend that a new user has been created
          * @param user_id, the user that is being added
          */
@@ -379,6 +381,7 @@ object Recommender {
   object RecPostsArgs extends ThriftStructCodec[RecPostsArgs] {
     val Struct = new TStruct("RecPostsArgs")
     val UserIdField = new TField("userId", TType.I64, 1)
+    val LimitField = new TField("limit", TType.I32, 2)
   
     /**
      * Checks that all required fields are non-null.
@@ -392,18 +395,22 @@ object Recommender {
     def apply(_iprot: TProtocol): RecPostsArgs = decode(_iprot)
   
     def apply(
-      userId: Long
+      userId: Long,
+      limit: Int
     ): RecPostsArgs = new Immutable(
-      userId
+      userId,
+      limit
     )
   
-    def unapply(_item: RecPostsArgs): Option[Long] = Some(_item.userId)
+    def unapply(_item: RecPostsArgs): Option[Product2[Long, Int]] = Some(_item)
   
     object Immutable extends ThriftStructCodec[RecPostsArgs] {
       def encode(_item: RecPostsArgs, _oproto: TProtocol) { _item.write(_oproto) }
       def decode(_iprot: TProtocol) = {
         var userId: Long = 0L
         var _got_userId = false
+        var limit: Int = 0
+        var _got_limit = false
         var _done = false
         _iprot.readStructBegin()
         while (!_done) {
@@ -423,6 +430,17 @@ object Recommender {
                   case _ => TProtocolUtil.skip(_iprot, _field.`type`)
                 }
               }
+              case 2 => { /* limit */
+                _field.`type` match {
+                  case TType.I32 => {
+                    limit = {
+                      _iprot.readI32()
+                    }
+                    _got_limit = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
               case _ => TProtocolUtil.skip(_iprot, _field.`type`)
             }
             _iprot.readFieldEnd()
@@ -430,8 +448,10 @@ object Recommender {
         }
         _iprot.readStructEnd()
         if (!_got_userId) throw new TProtocolException("Required field 'RecPostsArgs' was not found in serialized data for struct RecPostsArgs")
+        if (!_got_limit) throw new TProtocolException("Required field 'RecPostsArgs' was not found in serialized data for struct RecPostsArgs")
         new Immutable(
-          userId
+          userId,
+          limit
         )
       }
     }
@@ -442,20 +462,23 @@ object Recommender {
      * new instances.
      */
     class Immutable(
-      val userId: Long
+      val userId: Long,
+      val limit: Int
     ) extends RecPostsArgs
   
   }
   
   trait RecPostsArgs extends ThriftStruct
-    with Product1[Long]
+    with Product2[Long, Int]
     with java.io.Serializable
   {
     import RecPostsArgs._
   
     def userId: Long
+    def limit: Int
   
     def _1 = userId
+    def _2 = limit
   
     override def write(_oprot: TProtocol) {
       RecPostsArgs.validate(this)
@@ -466,14 +489,22 @@ object Recommender {
         _oprot.writeI64(userId_item)
         _oprot.writeFieldEnd()
       }
+      if (true) {
+        val limit_item = limit
+        _oprot.writeFieldBegin(LimitField)
+        _oprot.writeI32(limit_item)
+        _oprot.writeFieldEnd()
+      }
       _oprot.writeFieldStop()
       _oprot.writeStructEnd()
     }
   
     def copy(
-      userId: Long = this.userId
+      userId: Long = this.userId, 
+      limit: Int = this.limit
     ): RecPostsArgs = new Immutable(
-      userId
+      userId, 
+      limit
     )
   
     override def canEqual(other: Any): Boolean = other.isInstanceOf[RecPostsArgs]
@@ -485,10 +516,11 @@ object Recommender {
     override def toString: String = runtime.ScalaRunTime._toString(this)
   
   
-    override def productArity: Int = 1
+    override def productArity: Int = 2
   
     override def productElement(n: Int): Any = n match {
       case 0 => userId
+      case 1 => limit
       case _ => throw new IndexOutOfBoundsException(n.toString)
     }
   
@@ -3391,10 +3423,11 @@ object Recommender {
   
     /** Request a list of posts that are most appropriate for a user
          * @param user_id, the user that the posts are being requested for
+         * @param limit,  the maximum number of posts to return
          */
-    def recPosts(userId: Long): Future[PostList] = {
+    def recPosts(userId: Long, limit: Int): Future[PostList] = {
       __stats_recPosts.RequestsCounter.incr()
-      this.service(encodeRequest("recPosts", RecPostsArgs(userId))) flatMap { response =>
+      this.service(encodeRequest("recPosts", RecPostsArgs(userId, limit))) flatMap { response =>
         val result = decodeResponse(response, RecPostsResult)
         val exception =
           (result.nfe orElse result.ee orElse result.te).map(Future.exception)
@@ -3745,7 +3778,7 @@ object Recommender {
         val args = RecPostsArgs.decode(iprot)
         iprot.readMessageEnd()
         (try {
-          iface.recPosts(args.userId)
+          iface.recPosts(args.userId, args.limit)
         } catch {
           case e: Exception => Future.exception(e)
         }) flatMap { value: PostList =>

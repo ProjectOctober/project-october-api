@@ -28,13 +28,13 @@ require 'october_types'
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'ping failed: unknown result')
           end
 
-          def recPosts(user_id)
-            send_recPosts(user_id)
+          def recPosts(user_id, limit)
+            send_recPosts(user_id, limit)
             return recv_recPosts()
           end
 
-          def send_recPosts(user_id)
-            send_message('recPosts', RecPosts_args, :user_id => user_id)
+          def send_recPosts(user_id, limit)
+            send_message('recPosts', RecPosts_args, :user_id => user_id, :limit => limit)
           end
 
           def recv_recPosts()
@@ -197,7 +197,7 @@ require 'october_types'
             args = read_args(iprot, RecPosts_args)
             result = RecPosts_result.new()
             begin
-              result.success = @handler.recPosts(args.user_id)
+              result.success = @handler.recPosts(args.user_id, args.limit)
             rescue Backend::NotFoundException => nfe
               result.nfe = nfe
             rescue Backend::EngineException => ee
@@ -342,15 +342,18 @@ require 'october_types'
         class RecPosts_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           USER_ID = 1
+          LIMIT = 2
 
           FIELDS = {
-            USER_ID => {:type => ::Thrift::Types::I64, :name => 'user_id'}
+            USER_ID => {:type => ::Thrift::Types::I64, :name => 'user_id'},
+            LIMIT => {:type => ::Thrift::Types::I32, :name => 'limit'}
           }
 
           def struct_fields; FIELDS; end
 
           def validate
             raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user_id is unset!') unless @user_id
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field limit is unset!') unless @limit
           end
 
           ::Thrift::Struct.generate_accessors self
