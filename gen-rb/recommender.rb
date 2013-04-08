@@ -81,52 +81,52 @@ require 'october_types'
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'addPost failed: unknown result')
           end
 
-          def userVPost(user_id, verb, post_id)
-            send_userVPost(user_id, verb, post_id)
-            return recv_userVPost()
+          def userToPost(user_id, verb, post_id)
+            send_userToPost(user_id, verb, post_id)
+            return recv_userToPost()
           end
 
-          def send_userVPost(user_id, verb, post_id)
-            send_message('userVPost', UserVPost_args, :user_id => user_id, :verb => verb, :post_id => post_id)
+          def send_userToPost(user_id, verb, post_id)
+            send_message('userToPost', UserToPost_args, :user_id => user_id, :verb => verb, :post_id => post_id)
           end
 
-          def recv_userVPost()
-            result = receive_message(UserVPost_result)
+          def recv_userToPost()
+            result = receive_message(UserToPost_result)
             return result.success unless result.success.nil?
             raise result.nfe unless result.nfe.nil?
-            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'userVPost failed: unknown result')
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'userToPost failed: unknown result')
           end
 
-          def userVComment(user_id, verb, comment_id)
-            send_userVComment(user_id, verb, comment_id)
-            return recv_userVComment()
+          def userToComment(user_id, verb, comment_id)
+            send_userToComment(user_id, verb, comment_id)
+            return recv_userToComment()
           end
 
-          def send_userVComment(user_id, verb, comment_id)
-            send_message('userVComment', UserVComment_args, :user_id => user_id, :verb => verb, :comment_id => comment_id)
+          def send_userToComment(user_id, verb, comment_id)
+            send_message('userToComment', UserToComment_args, :user_id => user_id, :verb => verb, :comment_id => comment_id)
           end
 
-          def recv_userVComment()
-            result = receive_message(UserVComment_result)
+          def recv_userToComment()
+            result = receive_message(UserToComment_result)
             return result.success unless result.success.nil?
             raise result.nfe unless result.nfe.nil?
-            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'userVComment failed: unknown result')
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'userToComment failed: unknown result')
           end
 
-          def userVUser(actioner_id, verb, actionee_id)
-            send_userVUser(actioner_id, verb, actionee_id)
-            return recv_userVUser()
+          def userToUser(actioner_id, verb, actionee_id)
+            send_userToUser(actioner_id, verb, actionee_id)
+            return recv_userToUser()
           end
 
-          def send_userVUser(actioner_id, verb, actionee_id)
-            send_message('userVUser', UserVUser_args, :actioner_id => actioner_id, :verb => verb, :actionee_id => actionee_id)
+          def send_userToUser(actioner_id, verb, actionee_id)
+            send_message('userToUser', UserToUser_args, :actioner_id => actioner_id, :verb => verb, :actionee_id => actionee_id)
           end
 
-          def recv_userVUser()
-            result = receive_message(UserVUser_result)
+          def recv_userToUser()
+            result = receive_message(UserToUser_result)
             return result.success unless result.success.nil?
             raise result.nfe unless result.nfe.nil?
-            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'userVUser failed: unknown result')
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'userToUser failed: unknown result')
           end
 
           def userTopTerms(user_id, limit)
@@ -236,37 +236,37 @@ require 'october_types'
             write_result(result, oprot, 'addPost', seqid)
           end
 
-          def process_userVPost(seqid, iprot, oprot)
-            args = read_args(iprot, UserVPost_args)
-            result = UserVPost_result.new()
+          def process_userToPost(seqid, iprot, oprot)
+            args = read_args(iprot, UserToPost_args)
+            result = UserToPost_result.new()
             begin
-              result.success = @handler.userVPost(args.user_id, args.verb, args.post_id)
+              result.success = @handler.userToPost(args.user_id, args.verb, args.post_id)
             rescue Backend::NotFoundException => nfe
               result.nfe = nfe
             end
-            write_result(result, oprot, 'userVPost', seqid)
+            write_result(result, oprot, 'userToPost', seqid)
           end
 
-          def process_userVComment(seqid, iprot, oprot)
-            args = read_args(iprot, UserVComment_args)
-            result = UserVComment_result.new()
+          def process_userToComment(seqid, iprot, oprot)
+            args = read_args(iprot, UserToComment_args)
+            result = UserToComment_result.new()
             begin
-              result.success = @handler.userVComment(args.user_id, args.verb, args.comment_id)
+              result.success = @handler.userToComment(args.user_id, args.verb, args.comment_id)
             rescue Backend::NotFoundException => nfe
               result.nfe = nfe
             end
-            write_result(result, oprot, 'userVComment', seqid)
+            write_result(result, oprot, 'userToComment', seqid)
           end
 
-          def process_userVUser(seqid, iprot, oprot)
-            args = read_args(iprot, UserVUser_args)
-            result = UserVUser_result.new()
+          def process_userToUser(seqid, iprot, oprot)
+            args = read_args(iprot, UserToUser_args)
+            result = UserToUser_result.new()
             begin
-              result.success = @handler.userVUser(args.actioner_id, args.verb, args.actionee_id)
+              result.success = @handler.userToUser(args.actioner_id, args.verb, args.actionee_id)
             rescue Backend::NotFoundException => nfe
               result.nfe = nfe
             end
-            write_result(result, oprot, 'userVUser', seqid)
+            write_result(result, oprot, 'userToUser', seqid)
           end
 
           def process_userTopTerms(seqid, iprot, oprot)
@@ -463,7 +463,7 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class UserVPost_args
+        class UserToPost_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           USER_ID = 1
           VERB = 2
@@ -489,7 +489,7 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class UserVPost_result
+        class UserToPost_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           SUCCESS = 0
           NFE = 1
@@ -507,7 +507,7 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class UserVComment_args
+        class UserToComment_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           USER_ID = 1
           VERB = 2
@@ -533,7 +533,7 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class UserVComment_result
+        class UserToComment_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           SUCCESS = 0
           NFE = 1
@@ -551,7 +551,7 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class UserVUser_args
+        class UserToUser_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           ACTIONER_ID = 1
           VERB = 2
@@ -577,7 +577,7 @@ require 'october_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class UserVUser_result
+        class UserToUser_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           SUCCESS = 0
           NFE = 1

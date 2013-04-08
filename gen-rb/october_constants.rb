@@ -7,6 +7,6 @@
 require 'october_types'
 
   module Backend
-    VERSION = %q"0.8.0"
+    VERSION = %q"0.9.0"
 
 end

@@ -6,7 +6,7 @@ namespace java october
 namespace rb Backend
 
 # See the Semantic Versioning Specification (SemVer) http://semver.org.
-const string VERSION = "0.8.0"
+const string VERSION = "0.9.0"
 
 #
 # Structs
@@ -111,21 +111,21 @@ service Recommender {
      * @param verb, the action taken (this is from the Action enum)
      * @param post_id, the post that the action is being performed on
      */
-    bool userVPost(1: required i64 user_id, 2: required Action verb, 3: required i64 post_id) throws (1: NotFoundException nfe),
+    bool userToPost(1: required i64 user_id, 2: required Action verb, 3: required i64 post_id) throws (1: NotFoundException nfe),
 
     /** Alert the recommender that a user has actioned a comment
      * @param user_id, the user that performed the action
      * @param verb, the action taken (this is from the Action enum)
      * @param comment_id, the comment that the action is being performed on
      */
-    bool userVComment(1: required i64 user_id, 2: required Action verb, 3: required i64 comment_id) throws (1: NotFoundException nfe),
+    bool userToComment(1: required i64 user_id, 2: required Action verb, 3: required i64 comment_id) throws (1: NotFoundException nfe),
 
     /** Alert the recommender that a user has actioned a user
      * @param actioner_id, the user that performed the action
      * @param verb, the action taken (this is from the Action enum)
      * @param actionee_id, the user that the action is being performed on
      */
-    bool userVUser(1: required i64 actioner_id, 2: required Action verb, 3: required i64 actionee_id) throws (1: NotFoundException nfe),
+    bool userToUser(1: required i64 actioner_id, 2: required Action verb, 3: required i64 actionee_id) throws (1: NotFoundException nfe),
 
     /** Return the list of top n tokens for a user
      * @param user_id, the user to query for
