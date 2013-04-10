@@ -31,7 +31,7 @@ module IRB # :nodoc:
 end
 
 begin
-  transport = Thrift::FramedTransport.new(Thrift::Socket.new('127.0.0.1', 9090))
+  transport = Thrift::FramedTransport.new(Thrift::Socket.new('127.0.0.1', 9091))
   protocol = Thrift::BinaryProtocol.new(transport)
   client = Backend::Recommender::Client.new(protocol)
   transport.open()
@@ -39,5 +39,6 @@ begin
   IRB.start_session(binding)
 
 rescue Thrift::TransportException => e
-  p "can't connect!" + e
+  p "can't connect!" + e.message
+  p "remember to start october in test environment!"
 end
