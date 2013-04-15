@@ -6,7 +6,7 @@ namespace java october
 namespace rb Backend
 
 # See the Semantic Versioning Specification (SemVer) http://semver.org.
-const string VERSION = "0.9.0"
+const string VERSION = "1.0.0"
 
 #
 # Structs
@@ -89,8 +89,9 @@ service Recommender {
     /** Request a list of posts that are most appropriate for a user
      * @param user_id, the user that the posts are being requested for
      * @param limit,  the maximum number of posts to return
+     * @param limit,  the first post to return (for pagination) 
      */
-    PostList recPosts(1: required i64 user_id, 2: required i32 limit) throws (1: NotFoundException nfe, 2: EngineException ee, 3: TimeoutException te),
+    PostList recPosts(1: required i64 user_id, 2: required i32 limit, 3: required i32 skip) throws (1: NotFoundException nfe, 2: EngineException ee, 3: TimeoutException te),
 
     /** Informs the backend that a new user has been created
      * @param user_id, the user that is being added
@@ -135,12 +136,20 @@ service Recommender {
 
     /** Return a list of documents in sorted order of relevance for a search query
      * @param query, a map of tokens to their weight
+     * @param limit, the maximum number of posts to return
+     * @param limit, the first post to return (for pagination) 
      */
-    map<i64, double> textSearch(1: required list<string> tokens, 2: required i32 limit) throws (1: EngineException ee),
+    map<i64, double> textSearch(1: required list<string> tokens, 2: required i32 limit, 3: required i32 skip) throws (1: EngineException ee),
 
     /** Add some terms to a user that they are interested in
      * @param user_id, the user to add to
      * @param terms, the terms to add to the user
      */
     bool addUserTerms(1: required i64 user_id, 2: required list<string> terms) throws (1: NotFoundException nfe),
+
+    /** Remove terms to a user does not think they're interested in
+     * @param user_id, the user to operate on
+     * @param terms, the terms to remove from the user
+     */
+    bool removeUserTerms(1: required i64 user_id, 2: required list<string> terms) throws (1: NotFoundException nfe),
 }

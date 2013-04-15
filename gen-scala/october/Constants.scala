@@ -5,5 +5,5 @@ package october
 
 object Constants {
   
-  val VERSION: String = "0.9.0"
+  val VERSION: String = "1.0.0"
 }

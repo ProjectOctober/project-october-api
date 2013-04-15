@@ -28,13 +28,13 @@ require 'october_types'
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'ping failed: unknown result')
           end
 
-          def recPosts(user_id, limit)
-            send_recPosts(user_id, limit)
+          def recPosts(user_id, limit, skip)
+            send_recPosts(user_id, limit, skip)
             return recv_recPosts()
           end
 
-          def send_recPosts(user_id, limit)
-            send_message('recPosts', RecPosts_args, :user_id => user_id, :limit => limit)
+          def send_recPosts(user_id, limit, skip)
+            send_message('recPosts', RecPosts_args, :user_id => user_id, :limit => limit, :skip => skip)
           end
 
           def recv_recPosts()
@@ -145,13 +145,13 @@ require 'october_types'
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'userTopTerms failed: unknown result')
           end
 
-          def textSearch(tokens, limit)
-            send_textSearch(tokens, limit)
+          def textSearch(tokens, limit, skip)
+            send_textSearch(tokens, limit, skip)
             return recv_textSearch()
           end
 
-          def send_textSearch(tokens, limit)
-            send_message('textSearch', TextSearch_args, :tokens => tokens, :limit => limit)
+          def send_textSearch(tokens, limit, skip)
+            send_message('textSearch', TextSearch_args, :tokens => tokens, :limit => limit, :skip => skip)
           end
 
           def recv_textSearch()
@@ -177,6 +177,22 @@ require 'october_types'
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'addUserTerms failed: unknown result')
           end
 
+          def removeUserTerms(user_id, terms)
+            send_removeUserTerms(user_id, terms)
+            return recv_removeUserTerms()
+          end
+
+          def send_removeUserTerms(user_id, terms)
+            send_message('removeUserTerms', RemoveUserTerms_args, :user_id => user_id, :terms => terms)
+          end
+
+          def recv_removeUserTerms()
+            result = receive_message(RemoveUserTerms_result)
+            return result.success unless result.success.nil?
+            raise result.nfe unless result.nfe.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'removeUserTerms failed: unknown result')
+          end
+
         end
 
         class Processor
@@ -197,7 +213,7 @@ require 'october_types'
             args = read_args(iprot, RecPosts_args)
             result = RecPosts_result.new()
             begin
-              result.success = @handler.recPosts(args.user_id, args.limit)
+              result.success = @handler.recPosts(args.user_id, args.limit, args.skip)
             rescue Backend::NotFoundException => nfe
               result.nfe = nfe
             rescue Backend::EngineException => ee
@@ -284,7 +300,7 @@ require 'october_types'
             args = read_args(iprot, TextSearch_args)
             result = TextSearch_result.new()
             begin
-              result.success = @handler.textSearch(args.tokens, args.limit)
+              result.success = @handler.textSearch(args.tokens, args.limit, args.skip)
             rescue Backend::EngineException => ee
               result.ee = ee
             end
@@ -300,6 +316,17 @@ require 'october_types'
               result.nfe = nfe
             end
             write_result(result, oprot, 'addUserTerms', seqid)
+          end
+
+          def process_removeUserTerms(seqid, iprot, oprot)
+            args = read_args(iprot, RemoveUserTerms_args)
+            result = RemoveUserTerms_result.new()
+            begin
+              result.success = @handler.removeUserTerms(args.user_id, args.terms)
+            rescue Backend::NotFoundException => nfe
+              result.nfe = nfe
+            end
+            write_result(result, oprot, 'removeUserTerms', seqid)
           end
 
         end
@@ -343,10 +370,12 @@ require 'october_types'
           include ::Thrift::Struct, ::Thrift::Struct_Union
           USER_ID = 1
           LIMIT = 2
+          SKIP = 3
 
           FIELDS = {
             USER_ID => {:type => ::Thrift::Types::I64, :name => 'user_id'},
-            LIMIT => {:type => ::Thrift::Types::I32, :name => 'limit'}
+            LIMIT => {:type => ::Thrift::Types::I32, :name => 'limit'},
+            SKIP => {:type => ::Thrift::Types::I32, :name => 'skip'}
           }
 
           def struct_fields; FIELDS; end
@@ -354,6 +383,7 @@ require 'october_types'
           def validate
             raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user_id is unset!') unless @user_id
             raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field limit is unset!') unless @limit
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field skip is unset!') unless @skip
           end
 
           ::Thrift::Struct.generate_accessors self
@@ -637,10 +667,12 @@ require 'october_types'
           include ::Thrift::Struct, ::Thrift::Struct_Union
           TOKENS = 1
           LIMIT = 2
+          SKIP = 3
 
           FIELDS = {
             TOKENS => {:type => ::Thrift::Types::LIST, :name => 'tokens', :element => {:type => ::Thrift::Types::STRING}},
-            LIMIT => {:type => ::Thrift::Types::I32, :name => 'limit'}
+            LIMIT => {:type => ::Thrift::Types::I32, :name => 'limit'},
+            SKIP => {:type => ::Thrift::Types::I32, :name => 'skip'}
           }
 
           def struct_fields; FIELDS; end
@@ -648,6 +680,7 @@ require 'october_types'
           def validate
             raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tokens is unset!') unless @tokens
             raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field limit is unset!') unless @limit
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field skip is unset!') unless @skip
           end
 
           ::Thrift::Struct.generate_accessors self
@@ -692,6 +725,44 @@ require 'october_types'
         end
 
         class AddUserTerms_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          NFE = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+            NFE => {:type => ::Thrift::Types::STRUCT, :name => 'nfe', :class => Backend::NotFoundException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class RemoveUserTerms_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          USER_ID = 1
+          TERMS = 2
+
+          FIELDS = {
+            USER_ID => {:type => ::Thrift::Types::I64, :name => 'user_id'},
+            TERMS => {:type => ::Thrift::Types::LIST, :name => 'terms', :element => {:type => ::Thrift::Types::STRING}}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user_id is unset!') unless @user_id
+            raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field terms is unset!') unless @terms
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class RemoveUserTerms_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           SUCCESS = 0
           NFE = 1

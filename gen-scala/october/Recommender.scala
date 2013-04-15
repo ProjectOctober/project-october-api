@@ -29,11 +29,12 @@ object Recommender {
     /** Request a list of posts that are most appropriate for a user
          * @param user_id, the user that the posts are being requested for
          * @param limit,  the maximum number of posts to return
+         * @param limit,  the first post to return (for pagination) 
          */
     @throws(classOf[NotFoundException])
     @throws(classOf[EngineException])
     @throws(classOf[TimeoutException])
-    def recPosts(userId: Long, limit: Int): PostList
+    def recPosts(userId: Long, limit: Int, skip: Int): PostList
     /** Informs the backend that a new user has been created
          * @param user_id, the user that is being added
          */
@@ -78,15 +79,23 @@ object Recommender {
     def userTopTerms(userId: Long, limit: Int): Map[String, Long]
     /** Return a list of documents in sorted order of relevance for a search query
          * @param query, a map of tokens to their weight
+         * @param limit, the maximum number of posts to return
+         * @param limit, the first post to return (for pagination) 
          */
     @throws(classOf[EngineException])
-    def textSearch(tokens: Seq[String] = Seq[String](), limit: Int): Map[Long, Double]
+    def textSearch(tokens: Seq[String] = Seq[String](), limit: Int, skip: Int): Map[Long, Double]
     /** Add some terms to a user that they are interested in
          * @param user_id, the user to add to
          * @param terms, the terms to add to the user
          */
     @throws(classOf[NotFoundException])
     def addUserTerms(userId: Long, terms: Seq[String] = Seq[String]()): Boolean
+    /** Remove terms to a user does not think they're interested in
+         * @param user_id, the user to operate on
+         * @param terms, the terms to remove from the user
+         */
+    @throws(classOf[NotFoundException])
+    def removeUserTerms(userId: Long, terms: Seq[String] = Seq[String]()): Boolean
   }
 
   trait FutureIface {
@@ -95,8 +104,9 @@ object Recommender {
     /** Request a list of posts that are most appropriate for a user
          * @param user_id, the user that the posts are being requested for
          * @param limit,  the maximum number of posts to return
+         * @param limit,  the first post to return (for pagination) 
          */
-    def recPosts(userId: Long, limit: Int): Future[PostList]
+    def recPosts(userId: Long, limit: Int, skip: Int): Future[PostList]
     /** Informs the backend that a new user has been created
          * @param user_id, the user that is being added
          */
@@ -132,13 +142,20 @@ object Recommender {
     def userTopTerms(userId: Long, limit: Int): Future[Map[String, Long]]
     /** Return a list of documents in sorted order of relevance for a search query
          * @param query, a map of tokens to their weight
+         * @param limit, the maximum number of posts to return
+         * @param limit, the first post to return (for pagination) 
          */
-    def textSearch(tokens: Seq[String] = Seq[String](), limit: Int): Future[Map[Long, Double]]
+    def textSearch(tokens: Seq[String] = Seq[String](), limit: Int, skip: Int): Future[Map[Long, Double]]
     /** Add some terms to a user that they are interested in
          * @param user_id, the user to add to
          * @param terms, the terms to add to the user
          */
     def addUserTerms(userId: Long, terms: Seq[String] = Seq[String]()): Future[Boolean]
+    /** Remove terms to a user does not think they're interested in
+         * @param user_id, the user to operate on
+         * @param terms, the terms to remove from the user
+         */
+    def removeUserTerms(userId: Long, terms: Seq[String] = Seq[String]()): Future[Boolean]
   }
 
   
@@ -382,6 +399,7 @@ object Recommender {
     val Struct = new TStruct("RecPostsArgs")
     val UserIdField = new TField("userId", TType.I64, 1)
     val LimitField = new TField("limit", TType.I32, 2)
+    val SkipField = new TField("skip", TType.I32, 3)
   
     /**
      * Checks that all required fields are non-null.
@@ -396,13 +414,15 @@ object Recommender {
   
     def apply(
       userId: Long,
-      limit: Int
+      limit: Int,
+      skip: Int
     ): RecPostsArgs = new Immutable(
       userId,
-      limit
+      limit,
+      skip
     )
   
-    def unapply(_item: RecPostsArgs): Option[Product2[Long, Int]] = Some(_item)
+    def unapply(_item: RecPostsArgs): Option[Product3[Long, Int, Int]] = Some(_item)
   
     object Immutable extends ThriftStructCodec[RecPostsArgs] {
       def encode(_item: RecPostsArgs, _oproto: TProtocol) { _item.write(_oproto) }
@@ -411,6 +431,8 @@ object Recommender {
         var _got_userId = false
         var limit: Int = 0
         var _got_limit = false
+        var skip: Int = 0
+        var _got_skip = false
         var _done = false
         _iprot.readStructBegin()
         while (!_done) {
@@ -441,6 +463,17 @@ object Recommender {
                   case _ => TProtocolUtil.skip(_iprot, _field.`type`)
                 }
               }
+              case 3 => { /* skip */
+                _field.`type` match {
+                  case TType.I32 => {
+                    skip = {
+                      _iprot.readI32()
+                    }
+                    _got_skip = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
               case _ => TProtocolUtil.skip(_iprot, _field.`type`)
             }
             _iprot.readFieldEnd()
@@ -449,9 +482,11 @@ object Recommender {
         _iprot.readStructEnd()
         if (!_got_userId) throw new TProtocolException("Required field 'RecPostsArgs' was not found in serialized data for struct RecPostsArgs")
         if (!_got_limit) throw new TProtocolException("Required field 'RecPostsArgs' was not found in serialized data for struct RecPostsArgs")
+        if (!_got_skip) throw new TProtocolException("Required field 'RecPostsArgs' was not found in serialized data for struct RecPostsArgs")
         new Immutable(
           userId,
-          limit
+          limit,
+          skip
         )
       }
     }
@@ -463,22 +498,25 @@ object Recommender {
      */
     class Immutable(
       val userId: Long,
-      val limit: Int
+      val limit: Int,
+      val skip: Int
     ) extends RecPostsArgs
   
   }
   
   trait RecPostsArgs extends ThriftStruct
-    with Product2[Long, Int]
+    with Product3[Long, Int, Int]
     with java.io.Serializable
   {
     import RecPostsArgs._
   
     def userId: Long
     def limit: Int
+    def skip: Int
   
     def _1 = userId
     def _2 = limit
+    def _3 = skip
   
     override def write(_oprot: TProtocol) {
       RecPostsArgs.validate(this)
@@ -495,16 +533,24 @@ object Recommender {
         _oprot.writeI32(limit_item)
         _oprot.writeFieldEnd()
       }
+      if (true) {
+        val skip_item = skip
+        _oprot.writeFieldBegin(SkipField)
+        _oprot.writeI32(skip_item)
+        _oprot.writeFieldEnd()
+      }
       _oprot.writeFieldStop()
       _oprot.writeStructEnd()
     }
   
     def copy(
       userId: Long = this.userId, 
-      limit: Int = this.limit
+      limit: Int = this.limit, 
+      skip: Int = this.skip
     ): RecPostsArgs = new Immutable(
       userId, 
-      limit
+      limit, 
+      skip
     )
   
     override def canEqual(other: Any): Boolean = other.isInstanceOf[RecPostsArgs]
@@ -516,11 +562,12 @@ object Recommender {
     override def toString: String = runtime.ScalaRunTime._toString(this)
   
   
-    override def productArity: Int = 2
+    override def productArity: Int = 3
   
     override def productElement(n: Int): Any = n match {
       case 0 => userId
       case 1 => limit
+      case 2 => skip
       case _ => throw new IndexOutOfBoundsException(n.toString)
     }
   
@@ -2728,6 +2775,7 @@ object Recommender {
     val Struct = new TStruct("TextSearchArgs")
     val TokensField = new TField("tokens", TType.LIST, 1)
     val LimitField = new TField("limit", TType.I32, 2)
+    val SkipField = new TField("skip", TType.I32, 3)
   
     /**
      * Checks that all required fields are non-null.
@@ -2743,13 +2791,15 @@ object Recommender {
   
     def apply(
       tokens: Seq[String] = Seq[String](),
-      limit: Int
+      limit: Int,
+      skip: Int
     ): TextSearchArgs = new Immutable(
       tokens,
-      limit
+      limit,
+      skip
     )
   
-    def unapply(_item: TextSearchArgs): Option[Product2[Seq[String], Int]] = Some(_item)
+    def unapply(_item: TextSearchArgs): Option[Product3[Seq[String], Int, Int]] = Some(_item)
   
     object Immutable extends ThriftStructCodec[TextSearchArgs] {
       def encode(_item: TextSearchArgs, _oproto: TProtocol) { _item.write(_oproto) }
@@ -2758,6 +2808,8 @@ object Recommender {
         var _got_tokens = false
         var limit: Int = 0
         var _got_limit = false
+        var skip: Int = 0
+        var _got_skip = false
         var _done = false
         _iprot.readStructBegin()
         while (!_done) {
@@ -2798,6 +2850,17 @@ object Recommender {
                   case _ => TProtocolUtil.skip(_iprot, _field.`type`)
                 }
               }
+              case 3 => { /* skip */
+                _field.`type` match {
+                  case TType.I32 => {
+                    skip = {
+                      _iprot.readI32()
+                    }
+                    _got_skip = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
               case _ => TProtocolUtil.skip(_iprot, _field.`type`)
             }
             _iprot.readFieldEnd()
@@ -2806,9 +2869,11 @@ object Recommender {
         _iprot.readStructEnd()
         if (!_got_tokens) throw new TProtocolException("Required field 'TextSearchArgs' was not found in serialized data for struct TextSearchArgs")
         if (!_got_limit) throw new TProtocolException("Required field 'TextSearchArgs' was not found in serialized data for struct TextSearchArgs")
+        if (!_got_skip) throw new TProtocolException("Required field 'TextSearchArgs' was not found in serialized data for struct TextSearchArgs")
         new Immutable(
           tokens,
-          limit
+          limit,
+          skip
         )
       }
     }
@@ -2820,22 +2885,25 @@ object Recommender {
      */
     class Immutable(
       val tokens: Seq[String] = Seq[String](),
-      val limit: Int
+      val limit: Int,
+      val skip: Int
     ) extends TextSearchArgs
   
   }
   
   trait TextSearchArgs extends ThriftStruct
-    with Product2[Seq[String], Int]
+    with Product3[Seq[String], Int, Int]
     with java.io.Serializable
   {
     import TextSearchArgs._
   
     def tokens: Seq[String]
     def limit: Int
+    def skip: Int
   
     def _1 = tokens
     def _2 = limit
+    def _3 = skip
   
     override def write(_oprot: TProtocol) {
       TextSearchArgs.validate(this)
@@ -2856,16 +2924,24 @@ object Recommender {
         _oprot.writeI32(limit_item)
         _oprot.writeFieldEnd()
       }
+      if (true) {
+        val skip_item = skip
+        _oprot.writeFieldBegin(SkipField)
+        _oprot.writeI32(skip_item)
+        _oprot.writeFieldEnd()
+      }
       _oprot.writeFieldStop()
       _oprot.writeStructEnd()
     }
   
     def copy(
       tokens: Seq[String] = this.tokens, 
-      limit: Int = this.limit
+      limit: Int = this.limit, 
+      skip: Int = this.skip
     ): TextSearchArgs = new Immutable(
       tokens, 
-      limit
+      limit, 
+      skip
     )
   
     override def canEqual(other: Any): Boolean = other.isInstanceOf[TextSearchArgs]
@@ -2877,11 +2953,12 @@ object Recommender {
     override def toString: String = runtime.ScalaRunTime._toString(this)
   
   
-    override def productArity: Int = 2
+    override def productArity: Int = 3
   
     override def productElement(n: Int): Any = n match {
       case 0 => tokens
       case 1 => limit
+      case 2 => skip
       case _ => throw new IndexOutOfBoundsException(n.toString)
     }
   
@@ -3367,6 +3444,317 @@ object Recommender {
     override def productPrefix: String = "AddUserTermsResult"
   }
   
+  object RemoveUserTermsArgs extends ThriftStructCodec[RemoveUserTermsArgs] {
+    val Struct = new TStruct("RemoveUserTermsArgs")
+    val UserIdField = new TField("userId", TType.I64, 1)
+    val TermsField = new TField("terms", TType.LIST, 2)
+  
+    /**
+     * Checks that all required fields are non-null.
+     */
+    def validate(_item: RemoveUserTermsArgs) {
+      if (_item.terms == null) throw new TProtocolException("Required field terms cannot be null")
+    }
+  
+    def encode(_item: RemoveUserTermsArgs, _oproto: TProtocol) { _item.write(_oproto) }
+    def decode(_iprot: TProtocol) = Immutable.decode(_iprot)
+  
+    def apply(_iprot: TProtocol): RemoveUserTermsArgs = decode(_iprot)
+  
+    def apply(
+      userId: Long,
+      terms: Seq[String] = Seq[String]()
+    ): RemoveUserTermsArgs = new Immutable(
+      userId,
+      terms
+    )
+  
+    def unapply(_item: RemoveUserTermsArgs): Option[Product2[Long, Seq[String]]] = Some(_item)
+  
+    object Immutable extends ThriftStructCodec[RemoveUserTermsArgs] {
+      def encode(_item: RemoveUserTermsArgs, _oproto: TProtocol) { _item.write(_oproto) }
+      def decode(_iprot: TProtocol) = {
+        var userId: Long = 0L
+        var _got_userId = false
+        var terms: Seq[String] = Seq[String]()
+        var _got_terms = false
+        var _done = false
+        _iprot.readStructBegin()
+        while (!_done) {
+          val _field = _iprot.readFieldBegin()
+          if (_field.`type` == TType.STOP) {
+            _done = true
+          } else {
+            _field.id match {
+              case 1 => { /* userId */
+                _field.`type` match {
+                  case TType.I64 => {
+                    userId = {
+                      _iprot.readI64()
+                    }
+                    _got_userId = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case 2 => { /* terms */
+                _field.`type` match {
+                  case TType.LIST => {
+                    terms = {
+                      val _list = _iprot.readListBegin()
+                      val _rv = new mutable.ArrayBuffer[String](_list.size)
+                      var _i = 0
+                      while (_i < _list.size) {
+                        _rv += {
+                          _iprot.readString()
+                        }
+                        _i += 1
+                      }
+                      _iprot.readListEnd()
+                      _rv
+                    }
+                    _got_terms = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+            }
+            _iprot.readFieldEnd()
+          }
+        }
+        _iprot.readStructEnd()
+        if (!_got_userId) throw new TProtocolException("Required field 'RemoveUserTermsArgs' was not found in serialized data for struct RemoveUserTermsArgs")
+        if (!_got_terms) throw new TProtocolException("Required field 'RemoveUserTermsArgs' was not found in serialized data for struct RemoveUserTermsArgs")
+        new Immutable(
+          userId,
+          terms
+        )
+      }
+    }
+  
+    /**
+     * The default read-only implementation of RemoveUserTermsArgs.  You typically should not need to
+     * directly reference this class; instead, use the RemoveUserTermsArgs.apply method to construct
+     * new instances.
+     */
+    class Immutable(
+      val userId: Long,
+      val terms: Seq[String] = Seq[String]()
+    ) extends RemoveUserTermsArgs
+  
+  }
+  
+  trait RemoveUserTermsArgs extends ThriftStruct
+    with Product2[Long, Seq[String]]
+    with java.io.Serializable
+  {
+    import RemoveUserTermsArgs._
+  
+    def userId: Long
+    def terms: Seq[String]
+  
+    def _1 = userId
+    def _2 = terms
+  
+    override def write(_oprot: TProtocol) {
+      RemoveUserTermsArgs.validate(this)
+      _oprot.writeStructBegin(Struct)
+      if (true) {
+        val userId_item = userId
+        _oprot.writeFieldBegin(UserIdField)
+        _oprot.writeI64(userId_item)
+        _oprot.writeFieldEnd()
+      }
+      if (true) {
+        val terms_item = terms
+        _oprot.writeFieldBegin(TermsField)
+        _oprot.writeListBegin(new TList(TType.STRING, terms_item.size))
+        terms_item.foreach { terms_item_element =>
+          _oprot.writeString(terms_item_element)
+        }
+        _oprot.writeListEnd()
+        _oprot.writeFieldEnd()
+      }
+      _oprot.writeFieldStop()
+      _oprot.writeStructEnd()
+    }
+  
+    def copy(
+      userId: Long = this.userId, 
+      terms: Seq[String] = this.terms
+    ): RemoveUserTermsArgs = new Immutable(
+      userId, 
+      terms
+    )
+  
+    override def canEqual(other: Any): Boolean = other.isInstanceOf[RemoveUserTermsArgs]
+  
+    override def equals(other: Any): Boolean = runtime.ScalaRunTime._equals(this, other)
+  
+    override def hashCode: Int = runtime.ScalaRunTime._hashCode(this)
+  
+    override def toString: String = runtime.ScalaRunTime._toString(this)
+  
+  
+    override def productArity: Int = 2
+  
+    override def productElement(n: Int): Any = n match {
+      case 0 => userId
+      case 1 => terms
+      case _ => throw new IndexOutOfBoundsException(n.toString)
+    }
+  
+    override def productPrefix: String = "RemoveUserTermsArgs"
+  }
+  
+  object RemoveUserTermsResult extends ThriftStructCodec[RemoveUserTermsResult] {
+    val Struct = new TStruct("RemoveUserTermsResult")
+    val SuccessField = new TField("success", TType.BOOL, 0)
+    val NfeField = new TField("nfe", TType.STRUCT, 1)
+  
+    /**
+     * Checks that all required fields are non-null.
+     */
+    def validate(_item: RemoveUserTermsResult) {
+    }
+  
+    def encode(_item: RemoveUserTermsResult, _oproto: TProtocol) { _item.write(_oproto) }
+    def decode(_iprot: TProtocol) = Immutable.decode(_iprot)
+  
+    def apply(_iprot: TProtocol): RemoveUserTermsResult = decode(_iprot)
+  
+    def apply(
+      success: Option[Boolean] = None,
+      nfe: Option[NotFoundException] = None
+    ): RemoveUserTermsResult = new Immutable(
+      success,
+      nfe
+    )
+  
+    def unapply(_item: RemoveUserTermsResult): Option[Product2[Option[Boolean], Option[NotFoundException]]] = Some(_item)
+  
+    object Immutable extends ThriftStructCodec[RemoveUserTermsResult] {
+      def encode(_item: RemoveUserTermsResult, _oproto: TProtocol) { _item.write(_oproto) }
+      def decode(_iprot: TProtocol) = {
+        var success: Boolean = false
+        var _got_success = false
+        var nfe: NotFoundException = null
+        var _got_nfe = false
+        var _done = false
+        _iprot.readStructBegin()
+        while (!_done) {
+          val _field = _iprot.readFieldBegin()
+          if (_field.`type` == TType.STOP) {
+            _done = true
+          } else {
+            _field.id match {
+              case 0 => { /* success */
+                _field.`type` match {
+                  case TType.BOOL => {
+                    success = {
+                      _iprot.readBool()
+                    }
+                    _got_success = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case 1 => { /* nfe */
+                _field.`type` match {
+                  case TType.STRUCT => {
+                    nfe = {
+                      NotFoundException.decode(_iprot)
+                    }
+                    _got_nfe = true
+                  }
+                  case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+                }
+              }
+              case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+            }
+            _iprot.readFieldEnd()
+          }
+        }
+        _iprot.readStructEnd()
+        new Immutable(
+          if (_got_success) Some(success) else None,
+          if (_got_nfe) Some(nfe) else None
+        )
+      }
+    }
+  
+    /**
+     * The default read-only implementation of RemoveUserTermsResult.  You typically should not need to
+     * directly reference this class; instead, use the RemoveUserTermsResult.apply method to construct
+     * new instances.
+     */
+    class Immutable(
+      val success: Option[Boolean] = None,
+      val nfe: Option[NotFoundException] = None
+    ) extends RemoveUserTermsResult
+  
+  }
+  
+  trait RemoveUserTermsResult extends ThriftStruct
+    with Product2[Option[Boolean], Option[NotFoundException]]
+    with java.io.Serializable
+  {
+    import RemoveUserTermsResult._
+  
+    def success: Option[Boolean]
+    def nfe: Option[NotFoundException]
+  
+    def _1 = success
+    def _2 = nfe
+  
+    override def write(_oprot: TProtocol) {
+      RemoveUserTermsResult.validate(this)
+      _oprot.writeStructBegin(Struct)
+      if (success.isDefined) {
+        val success_item = success.get
+        _oprot.writeFieldBegin(SuccessField)
+        _oprot.writeBool(success_item)
+        _oprot.writeFieldEnd()
+      }
+      if (nfe.isDefined) {
+        val nfe_item = nfe.get
+        _oprot.writeFieldBegin(NfeField)
+        nfe_item.write(_oprot)
+        _oprot.writeFieldEnd()
+      }
+      _oprot.writeFieldStop()
+      _oprot.writeStructEnd()
+    }
+  
+    def copy(
+      success: Option[Boolean] = this.success, 
+      nfe: Option[NotFoundException] = this.nfe
+    ): RemoveUserTermsResult = new Immutable(
+      success, 
+      nfe
+    )
+  
+    override def canEqual(other: Any): Boolean = other.isInstanceOf[RemoveUserTermsResult]
+  
+    override def equals(other: Any): Boolean = runtime.ScalaRunTime._equals(this, other)
+  
+    override def hashCode: Int = runtime.ScalaRunTime._hashCode(this)
+  
+    override def toString: String = runtime.ScalaRunTime._toString(this)
+  
+  
+    override def productArity: Int = 2
+  
+    override def productElement(n: Int): Any = n match {
+      case 0 => success
+      case 1 => nfe
+      case _ => throw new IndexOutOfBoundsException(n.toString)
+    }
+  
+    override def productPrefix: String = "RemoveUserTermsResult"
+  }
+  
   class FinagledClient(
     val service: FinagleService[ThriftClientRequest, Array[Byte]],
     val protocolFactory: TProtocolFactory = new TBinaryProtocol.Factory,
@@ -3454,10 +3842,11 @@ object Recommender {
     /** Request a list of posts that are most appropriate for a user
          * @param user_id, the user that the posts are being requested for
          * @param limit,  the maximum number of posts to return
+         * @param limit,  the first post to return (for pagination) 
          */
-    def recPosts(userId: Long, limit: Int): Future[PostList] = {
+    def recPosts(userId: Long, limit: Int, skip: Int): Future[PostList] = {
       __stats_recPosts.RequestsCounter.incr()
-      this.service(encodeRequest("recPosts", RecPostsArgs(userId, limit))) flatMap { response =>
+      this.service(encodeRequest("recPosts", RecPostsArgs(userId, limit, skip))) flatMap { response =>
         val result = decodeResponse(response, RecPostsResult)
         val exception =
           (result.nfe orElse result.ee orElse result.te).map(Future.exception)
@@ -3666,10 +4055,12 @@ object Recommender {
   
     /** Return a list of documents in sorted order of relevance for a search query
          * @param query, a map of tokens to their weight
+         * @param limit, the maximum number of posts to return
+         * @param limit, the first post to return (for pagination) 
          */
-    def textSearch(tokens: Seq[String] = Seq[String](), limit: Int): Future[Map[Long, Double]] = {
+    def textSearch(tokens: Seq[String] = Seq[String](), limit: Int, skip: Int): Future[Map[Long, Double]] = {
       __stats_textSearch.RequestsCounter.incr()
-      this.service(encodeRequest("textSearch", TextSearchArgs(tokens, limit))) flatMap { response =>
+      this.service(encodeRequest("textSearch", TextSearchArgs(tokens, limit, skip))) flatMap { response =>
         val result = decodeResponse(response, TextSearchResult)
         val exception =
           (result.ee).map(Future.exception)
@@ -3714,6 +4105,36 @@ object Recommender {
       } onFailure { ex =>
         __stats_addUserTerms.FailuresCounter.incr()
         __stats_addUserTerms.FailuresScope.counter(ex.getClass.getName).incr()
+      }
+    }
+    private[this] object __stats_removeUserTerms {
+      val RequestsCounter = scopedStats.scope("removeUserTerms").counter("requests")
+      val SuccessCounter = scopedStats.scope("removeUserTerms").counter("success")
+      val FailuresCounter = scopedStats.scope("removeUserTerms").counter("failures")
+      val FailuresScope = scopedStats.scope("removeUserTerms").scope("failures")
+    }
+  
+    /** Remove terms to a user does not think they're interested in
+         * @param user_id, the user to operate on
+         * @param terms, the terms to remove from the user
+         */
+    def removeUserTerms(userId: Long, terms: Seq[String] = Seq[String]()): Future[Boolean] = {
+      __stats_removeUserTerms.RequestsCounter.incr()
+      this.service(encodeRequest("removeUserTerms", RemoveUserTermsArgs(userId, terms))) flatMap { response =>
+        val result = decodeResponse(response, RemoveUserTermsResult)
+        val exception =
+          (result.nfe).map(Future.exception)
+        exception.orElse(result.success.map(Future.value)).getOrElse(Future.exception(missingResult("removeUserTerms")))
+      } rescue {
+        case ex: SourcedException => {
+          if (this.serviceName != "") { ex.serviceName = this.serviceName }
+          Future.exception(ex)
+        }
+      } onSuccess { _ =>
+        __stats_removeUserTerms.SuccessCounter.incr()
+      } onFailure { ex =>
+        __stats_removeUserTerms.FailuresCounter.incr()
+        __stats_removeUserTerms.FailuresScope.counter(ex.getClass.getName).incr()
       }
     }
   }
@@ -3808,7 +4229,7 @@ object Recommender {
         val args = RecPostsArgs.decode(iprot)
         iprot.readMessageEnd()
         (try {
-          iface.recPosts(args.userId, args.limit)
+          iface.recPosts(args.userId, args.limit, args.skip)
         } catch {
           case e: Exception => Future.exception(e)
         }) flatMap { value: PostList =>
@@ -3991,7 +4412,7 @@ object Recommender {
         val args = TextSearchArgs.decode(iprot)
         iprot.readMessageEnd()
         (try {
-          iface.textSearch(args.tokens, args.limit)
+          iface.textSearch(args.tokens, args.limit, args.skip)
         } catch {
           case e: Exception => Future.exception(e)
         }) flatMap { value: Map[Long, Double] =>
@@ -4030,6 +4451,30 @@ object Recommender {
         case e: TProtocolException => {
           iprot.readMessageEnd()
           exception("addUserTerms", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
+        }
+        case e: Exception => Future.exception(e)
+      }
+    })
+    addFunction("removeUserTerms", { (iprot: TProtocol, seqid: Int) =>
+      try {
+        val args = RemoveUserTermsArgs.decode(iprot)
+        iprot.readMessageEnd()
+        (try {
+          iface.removeUserTerms(args.userId, args.terms)
+        } catch {
+          case e: Exception => Future.exception(e)
+        }) flatMap { value: Boolean =>
+          reply("removeUserTerms", seqid, RemoveUserTermsResult(success = Some(value)))
+        } rescue {
+          case e: NotFoundException => {
+            reply("removeUserTerms", seqid, RemoveUserTermsResult(nfe = Some(e)))
+          }
+          case e => Future.exception(e)
+        }
+      } catch {
+        case e: TProtocolException => {
+          iprot.readMessageEnd()
+          exception("removeUserTerms", seqid, TApplicationException.PROTOCOL_ERROR, e.getMessage)
         }
         case e: Exception => Future.exception(e)
       }
