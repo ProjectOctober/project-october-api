@@ -14,7 +14,7 @@ begin
   transport.open()
 
 rescue Thrift::TransportException => e
-  p "can't connect!" + e.messageo
+  p "can't connect!" + e.message
   p "remember to start october in test environment!"
 end
 
@@ -29,8 +29,8 @@ end
 # Make a 3 dimensional examination later.
 
 TOKENS = 16000
-TOKENS_PER_POST = 100
-MAX_COUNT_PER_TOKEN = 50
+TOKENS_PER_POST = 300
+MAX_COUNT_PER_TOKEN = 10
 TOKEN_LENGTH = 8
 USERS = 10
 POSTS_PER_USER = 50
@@ -55,7 +55,9 @@ USERS.times do |u|
     add_time = Benchmark.realtime do
       client.addPost(u+1, u*POSTS_PER_USER+p+1, toks)
     end
-    puts "add\t#{u+1}\t#{u*POSTS_PER_USER+p+1}\t#{total_tokens}\t#{add_time}"
+    if ARGV[0] == 'all'
+      puts "add\t#{u+1}\t#{u*POSTS_PER_USER+p+1}\t#{total_tokens}\t#{add_time}"
+    end
     total_tokens += toks.length
     query_time = Benchmark.realtime do
       client.recPosts(1, POSTS_PER_REQUEST)
