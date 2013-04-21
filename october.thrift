@@ -15,10 +15,12 @@ const string VERSION = "1.0.0"
 /** A single post with its calculated weight.
  * @param post_id, the unique id of a post.
  * @param weight, the "importance" of the post to the querying user [0,1].
+ * @param reason, the top token of the dot product that made this an important post
  */
 struct Post {
     1: required i64 post_id,
     2: optional double weight,
+    3: optional string reason
 }
 
 /** A list of posts along with a confidence for the accuracy of the list.

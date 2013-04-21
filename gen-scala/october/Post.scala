@@ -13,11 +13,13 @@ import scala.collection.{Map, Set}
 /** A single post with its calculated weight.
  * @param post_id, the unique id of a post.
  * @param weight, the "importance" of the post to the querying user [0,1].
+ * @param reason, the top token of the dot product that made this an important post
  */
 object Post extends ThriftStructCodec[Post] {
   val Struct = new TStruct("Post")
   val PostIdField = new TField("postId", TType.I64, 1)
   val WeightField = new TField("weight", TType.DOUBLE, 2)
+  val ReasonField = new TField("reason", TType.STRING, 3)
 
   /**
    * Checks that all required fields are non-null.
@@ -32,13 +34,15 @@ object Post extends ThriftStructCodec[Post] {
 
   def apply(
     postId: Long,
-    weight: Option[Double] = None
+    weight: Option[Double] = None,
+    reason: Option[String] = None
   ): Post = new Immutable(
     postId,
-    weight
+    weight,
+    reason
   )
 
-  def unapply(_item: Post): Option[Product2[Long, Option[Double]]] = Some(_item)
+  def unapply(_item: Post): Option[Product3[Long, Option[Double], Option[String]]] = Some(_item)
 
   object Immutable extends ThriftStructCodec[Post] {
     def encode(_item: Post, _oproto: TProtocol) { _item.write(_oproto) }
@@ -47,6 +51,8 @@ object Post extends ThriftStructCodec[Post] {
       var _got_postId = false
       var weight: Double = 0.0
       var _got_weight = false
+      var reason: String = null
+      var _got_reason = false
       var _done = false
       _iprot.readStructBegin()
       while (!_done) {
@@ -77,6 +83,17 @@ object Post extends ThriftStructCodec[Post] {
                 case _ => TProtocolUtil.skip(_iprot, _field.`type`)
               }
             }
+            case 3 => { /* reason */
+              _field.`type` match {
+                case TType.STRING => {
+                  reason = {
+                    _iprot.readString()
+                  }
+                  _got_reason = true
+                }
+                case _ => TProtocolUtil.skip(_iprot, _field.`type`)
+              }
+            }
             case _ => TProtocolUtil.skip(_iprot, _field.`type`)
           }
           _iprot.readFieldEnd()
@@ -86,7 +103,8 @@ object Post extends ThriftStructCodec[Post] {
       if (!_got_postId) throw new TProtocolException("Required field 'Post' was not found in serialized data for struct Post")
       new Immutable(
         postId,
-        if (_got_weight) Some(weight) else None
+        if (_got_weight) Some(weight) else None,
+        if (_got_reason) Some(reason) else None
       )
     }
   }
@@ -98,7 +116,8 @@ object Post extends ThriftStructCodec[Post] {
    */
   class Immutable(
     val postId: Long,
-    val weight: Option[Double] = None
+    val weight: Option[Double] = None,
+    val reason: Option[String] = None
   ) extends Post
 
   /**
@@ -110,20 +129,23 @@ object Post extends ThriftStructCodec[Post] {
     protected def _underlying_Post: Post
     def postId: Long = _underlying_Post.postId
     def weight: Option[Double] = _underlying_Post.weight
+    def reason: Option[String] = _underlying_Post.reason
   }
 }
 
 trait Post extends ThriftStruct
-  with Product2[Long, Option[Double]]
+  with Product3[Long, Option[Double], Option[String]]
   with java.io.Serializable
 {
   import Post._
 
   def postId: Long
   def weight: Option[Double]
+  def reason: Option[String]
 
   def _1 = postId
   def _2 = weight
+  def _3 = reason
 
   override def write(_oprot: TProtocol) {
     Post.validate(this)
@@ -140,16 +162,24 @@ trait Post extends ThriftStruct
       _oprot.writeDouble(weight_item)
       _oprot.writeFieldEnd()
     }
+    if (reason.isDefined) {
+      val reason_item = reason.get
+      _oprot.writeFieldBegin(ReasonField)
+      _oprot.writeString(reason_item)
+      _oprot.writeFieldEnd()
+    }
     _oprot.writeFieldStop()
     _oprot.writeStructEnd()
   }
 
   def copy(
     postId: Long = this.postId, 
-    weight: Option[Double] = this.weight
+    weight: Option[Double] = this.weight, 
+    reason: Option[String] = this.reason
   ): Post = new Immutable(
     postId, 
-    weight
+    weight, 
+    reason
   )
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Post]
@@ -161,11 +191,12 @@ trait Post extends ThriftStruct
   override def toString: String = runtime.ScalaRunTime._toString(this)
 
 
-  override def productArity: Int = 2
+  override def productArity: Int = 3
 
   override def productElement(n: Int): Any = n match {
     case 0 => postId
     case 1 => weight
+    case 2 => reason
     case _ => throw new IndexOutOfBoundsException(n.toString)
   }
 

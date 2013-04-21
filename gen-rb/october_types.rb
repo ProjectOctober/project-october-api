@@ -24,14 +24,17 @@ module Backend
     # A single post with its calculated weight.
     # @param post_id, the unique id of a post.
     # @param weight, the "importance" of the post to the querying user [0,1].
+    # @param reason, the top token of the dot product that made this an important post
     class Post
       include ::Thrift::Struct, ::Thrift::Struct_Union
       POST_ID = 1
       WEIGHT = 2
+      REASON = 3
 
       FIELDS = {
         POST_ID => {:type => ::Thrift::Types::I64, :name => 'post_id'},
-        WEIGHT => {:type => ::Thrift::Types::DOUBLE, :name => 'weight', :optional => true}
+        WEIGHT => {:type => ::Thrift::Types::DOUBLE, :name => 'weight', :optional => true},
+        REASON => {:type => ::Thrift::Types::STRING, :name => 'reason', :optional => true}
       }
 
       def struct_fields; FIELDS; end
